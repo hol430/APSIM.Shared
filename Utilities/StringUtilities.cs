@@ -645,7 +645,7 @@ namespace APSIM.Shared.Utilities
         {
             int count = 0;
             int pos = 0;
-            while (text.IndexOf(stringToFind, pos) != -1)
+            while ((pos = text.IndexOf(stringToFind, pos)) != -1)
             {
                 count++;
                 pos += stringToFind.Length;
