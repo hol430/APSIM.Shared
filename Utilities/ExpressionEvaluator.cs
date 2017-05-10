@@ -795,7 +795,16 @@ namespace APSIM.Shared.Utilities
                     if (args.Length == 1)
                     {
                         result.m_name = name + "(" + ((Symbol)args[0]).m_value.ToString() + ")";
-                        result.m_value = System.Math.Exp(((Symbol)args[0]).m_value);
+
+                        double[] values = ((Symbol)args[0]).m_values;
+                        if (values != null && values.Length > 0)
+                        {
+                            result.m_values = new double[values.Length];
+                            for (int i = 0; i < values.Length; i++)
+                                result.m_values[i] = System.Math.Exp(values[i]);
+                        }
+                        else
+                            result.m_value = System.Math.Exp(((Symbol)args[0]).m_value);
                     }
                     else
                     {
