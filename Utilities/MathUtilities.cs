@@ -126,7 +126,7 @@ namespace APSIM.Shared.Utilities
         /// Perform a stepwise divide of the values in value 1 with the values in value2.
         /// Returns an array of the same size as value 1 and value 2
         /// </summary>
-        public static double[] Divide(double[] value1, double[] value2)
+        public static double[] Divide(double[] value1, double[] value2, double errVal=0.0)
         {
             double[] results = null;
             if (value1.Length == value2.Length)
@@ -136,14 +136,8 @@ namespace APSIM.Shared.Utilities
                 {
                     if (value1[iIndex] == MissingValue || value2[iIndex] == MissingValue)
                         results[iIndex] = MissingValue;
-                    else if (value2[iIndex] != 0)
-                    {
-                        results[iIndex] = (value1[iIndex] / value2[iIndex]);
-                    }
                     else
-                    {
-                        results[iIndex] = value1[iIndex];
-                    }
+                        results[iIndex] = MathUtilities.Divide(value1[iIndex], value2[iIndex], errVal);
                 }
             }
             return results;
