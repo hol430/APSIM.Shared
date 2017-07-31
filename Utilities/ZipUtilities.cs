@@ -32,11 +32,12 @@ namespace APSIM.Shared.Utilities
                 zip.SetLevel(5); // 0 - store only to 9 - means best compression
                 foreach (string FileName in filesToZip)
                 {
-                    FileStream fs = File.OpenRead(FileName);
-
-                    byte[] buffer = new byte[fs.Length];
-                    fs.Read(buffer, 0, buffer.Length);
-                    fs.Close();
+                    byte[] buffer = null;
+                    using (FileStream fs = File.OpenRead(FileName))
+                    {
+                        buffer = new byte[fs.Length];
+                        fs.Read(buffer, 0, buffer.Length);
+                    }
 
                     ZipEntry entry = new ZipEntry(Path.GetFileName(FileName));
                     zip.PutNextEntry(entry);
