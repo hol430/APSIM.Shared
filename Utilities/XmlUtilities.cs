@@ -414,28 +414,44 @@ namespace APSIM.Shared.Utilities
             return null;
         }
 
-        /// <summary>Childs the nodes.</summary>
+        /// <summary>Finds all direct children of the specified node</summary>
         /// <param name="node">The node.</param>
-        /// <param name="typeFilter">The type filter.</param>
+        /// <param name="typeFilter">The type filter. Can be null for all children.</param>
         /// <returns></returns>
         public static List<XmlNode> ChildNodes(XmlNode node, string typeFilter)
         {
-            // ----------------------------------------------------
-            // Return an array of children that match the specified
-            // filter. The filter can be an empty string to match
-            // all child XmlNodes
-            // ----------------------------------------------------
             List<XmlNode> MatchingChildren = new List<XmlNode>();
             if (node != null)
             {
                 foreach (XmlNode Child in node.ChildNodes)
                 {
                     if (Child.Name != "#text" && Child.Name != "#comment" && Child.Name != "#cdata-section" &&
-                        typeFilter == "" || Type(Child).ToLower() == typeFilter.ToLower())
+                        typeFilter == null || typeFilter == "" || Type(Child).ToLower() == typeFilter.ToLower())
                         MatchingChildren.Add(Child);
                 }
             }
             return MatchingChildren;
+        }
+
+        /// <summary>Finds all direct and non direct children of the specified node</summary>
+        /// <param name="node">The node.</param>
+        /// <param name="typeFilter">The type filter. Can be null for all children.</param>
+        /// <returns></returns>
+        public static List<XmlNode> ChildNodesRecursively(XmlNode node, string typeFilter)
+        {
+            List<XmlNode> matchingChildren = new List<XmlNode>();
+            if (node != null)
+            {
+                foreach (XmlNode child in node.ChildNodes)
+                {
+                    if (child.Name != "#text" && child.Name != "#comment" && child.Name != "#cdata-section" &&
+                        (typeFilter == null || typeFilter == "" || Type(child).ToLower() == typeFilter.ToLower()))
+                        matchingChildren.Add(child);
+
+                    matchingChildren.AddRange(ChildNodesRecursively(child, typeFilter));
+                }
+            }
+            return matchingChildren;
         }
 
         /// <summary>Childs the name of the nodes by.</summary>

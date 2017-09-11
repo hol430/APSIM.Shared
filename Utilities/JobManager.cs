@@ -66,6 +66,15 @@ namespace APSIM.Shared.Utilities
             }
         }
 
+        /// <summary>Gets the number of jobs with type name</summary>
+        /// <param name="typeName">The type name of job to look for.</param>
+        public int CountJobTypeInQueue(string typeName)
+        {
+            lock (this)
+            {
+                return jobs.Count(job => job.RunnableJob.GetType().Name == typeName);
+            }
+        }
 
         /// <summary>Gets the number of jobs still to run.</summary>
         public int NumberOfJobsStillToComplete

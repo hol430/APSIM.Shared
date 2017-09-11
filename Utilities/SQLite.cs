@@ -258,6 +258,10 @@ namespace APSIM.Shared.Utilities
         /// <value><c>true</c> if this instance is open; otherwise, <c>false</c>.</value>
         public bool IsOpen { get { return _open; } }
 
+        /// <summary>Property to return true if the database is readonly.</summary>
+        public bool IsReadOnly { get; private set; }
+
+
         /// <summary>Opens or creates SQLite database with the specified path</summary>
         /// <param name="path">Path to SQLite database</param>
         /// <param name="readOnly">if set to <c>true</c> [read only].</param>
@@ -277,6 +281,7 @@ namespace APSIM.Shared.Utilities
             }
 
             _open = true;
+            IsReadOnly = readOnly;
             sqlite3_busy_timeout(_db, 40000);
         }
 
