@@ -214,12 +214,11 @@ namespace APSIM.Shared.Utilities
         /// <param name="obj">The object to send.</param>
         public static object Send(string serverName, int port, object obj)
         {
-            TcpClient Server = new TcpClient(serverName, Convert.ToInt32(port));
-            MemoryStream s = new MemoryStream();
-            try
+            using (TcpClient server = new TcpClient(serverName, Convert.ToInt32(port)))
             {
+                MemoryStream s = new MemoryStream();
                 Byte[] bData = EncodeData(obj);
-                Server.GetStream().Write(bData, 0, bData.Length);
+                server.GetStream().Write(bData, 0, bData.Length);
                 Byte[] bytes = new Byte[65536];
 
                 // Loop to receive all the data sent by the client.
@@ -230,7 +229,7 @@ namespace APSIM.Shared.Utilities
                 bool allDone = false;
                 do
                 {
-                    NumBytesRead = Server.GetStream().Read(bytes, 0, bytes.Length);
+                    NumBytesRead = server.GetStream().Read(bytes, 0, bytes.Length);
                     s.Write(bytes, 0, NumBytesRead);
                     totalNumBytes += NumBytesRead;
 
@@ -245,10 +244,6 @@ namespace APSIM.Shared.Utilities
 
                 // Decode the bytes and return.
                 return DecodeData(s.ToArray());
-            }
-            finally
-            {
-                if (Server != null) Server.Close();
             }
         }
 
