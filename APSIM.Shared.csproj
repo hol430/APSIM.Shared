@@ -136,6 +136,10 @@
     <Compile Include="Soils\Water.cs" />
     <Compile Include="Utilities\ExcelUtilities.cs" />
     <Compile Include="Utilities\ApsimTextFile.cs" />
+    <Compile Include="Utilities\IComputationalyTimeConsuming.cs" />
+    <Compile Include="Utilities\IJobRunner.cs" />
+    <Compile Include="Utilities\IRunnable.cs" />
+    <Compile Include="Utilities\IJobManager.cs" />
     <Compile Include="Utilities\ImageUtilities.cs" />
     <Compile Include="Utilities\Colour.cs" />
     <Compile Include="Utilities\DataTableUtilities.cs" />
@@ -144,9 +148,8 @@
     <Compile Include="Utilities\ExpressionEvaluator.cs" />
     <Compile Include="Utilities\FTPClient.cs" />
     <Compile Include="Utilities\IntegerToWritten.cs" />
-    <Compile Include="Utilities\JobManager.cs" />
-    <Compile Include="Utilities\JobParallel.cs" />
-    <Compile Include="Utilities\JobSequence.cs" />
+    <Compile Include="Utilities\JobRunnerSync.cs" />
+    <Compile Include="Utilities\JobRunnerAsync.cs" />
     <Compile Include="Utilities\MathUtilities.cs" />
     <Compile Include="Utilities\MetUtilities.cs" />
     <Compile Include="Utilities\PathUtilities.cs" />
