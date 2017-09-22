@@ -510,34 +510,43 @@ namespace APSIM.Shared.Utilities
             {
                 if (Convert.IsDBNull(values[i]) || values[i] == null)
                 {
-                    sqlite3_bind_null(query, i+1);
-                }
-                else if (values[i].GetType().ToString() == "System.DateTime")
-                {
-                    DateTime d = (DateTime)values[i];
-                    sqlite3_bind_text(query, i + 1, d.ToString("yyyy-MM-dd hh:mm:ss"), -1, new IntPtr(-1));
-                }
-                else if (values[i].GetType().ToString() == "System.Int32")
-                {
-                    int integer = (int)values[i];
-                    sqlite3_bind_int(query, i + 1, integer);
-                }
-                else if (values[i].GetType().ToString() == "System.Single")
-                {
-                    float f = (float)values[i];
-                    sqlite3_bind_double(query, i + 1, f);
-                }
-                else if (values[i].GetType().ToString() == "System.Double")
-                {
-                    double d = (double)values[i];
-                    sqlite3_bind_double(query, i + 1, d);
+                    sqlite3_bind_null(query, i + 1);
                 }
                 else
                 {
-                    sqlite3_bind_text(query, i + 1, values[i] as string, -1, new IntPtr(-1));
-
+                    switch (Type.GetTypeCode(values[i].GetType()))
+                    {
+                        case TypeCode.DateTime:
+                            {
+                                DateTime d = (DateTime)values[i];
+                                sqlite3_bind_text(query, i + 1, d.ToString("yyyy-MM-dd hh:mm:ss"), -1, new IntPtr(-1));
+                                break;
+                            }
+                        case TypeCode.Int32:
+                            {
+                                int integer = (int)values[i];
+                                sqlite3_bind_int(query, i + 1, integer);
+                                break;
+                            }
+                        case TypeCode.Single:
+                            {
+                                float f = (float)values[i];
+                                sqlite3_bind_double(query, i + 1, f);
+                                break;
+                            }
+                        case TypeCode.Double:
+                            {
+                                double d = (double)values[i];
+                                sqlite3_bind_double(query, i + 1, d);
+                                break;
+                            }
+                        default:
+                            {
+                                sqlite3_bind_text(query, i + 1, values[i] as string, -1, new IntPtr(-1));
+                                break;
+                            }
+                    }
                 }
-
             }
 
             if (sqlite3_step(query) != SQLITE_DONE)
