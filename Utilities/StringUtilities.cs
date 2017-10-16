@@ -42,10 +42,9 @@ namespace APSIM.Shared.Utilities
         /// </summary>
         public static int IndexOfCaseInsensitive(string[] values, string st)
         {
-            string StLower = st.ToLower();
             for (int i = 0; (i <= (values.Length - 1)); i++)
             {
-                if ((values[i].ToLower() == StLower))
+                if (String.Equals(values[i], st, StringComparison.CurrentCultureIgnoreCase))
                 {
                     return i;
                 }
@@ -58,10 +57,9 @@ namespace APSIM.Shared.Utilities
         /// </summary>
         public static int IndexOfCaseInsensitive(StringCollection values, string st)
         {
-            string StLower = st.ToLower();
             for (int i = 0; (i <= (values.Count - 1)); i++)
             {
-                if ((values[i].ToLower() == StLower))
+                if (String.Equals(values[i], st, StringComparison.CurrentCultureIgnoreCase))
                 {
                     return i;
                 }
@@ -75,10 +73,9 @@ namespace APSIM.Shared.Utilities
         /// </summary> 
         public static int IndexOfCaseInsensitive(List<string> values, string st)
         {
-            string StLower = st.ToLower();
             for (int i = 0; (i <= (values.Count - 1)); i++)
             {
-                if ((values[i].ToLower() == StLower))
+                if (String.Equals(values[i], st, StringComparison.CurrentCultureIgnoreCase))
                 {
                     return i;
                 }
