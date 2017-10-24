@@ -120,7 +120,7 @@ namespace APSIM.Shared.Soils
             double[] newN = new double[n.Length];
             for (int i = 0; i < n.Length; i++)
             {
-                if (n[i] == double.NaN)
+                if (Double.IsNaN(n[i]))
                     newN[i] = double.NaN;
                 else
                     newN[i] = n[i] * 100 / (bd[i] * thickness[i]);

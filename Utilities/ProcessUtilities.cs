@@ -106,9 +106,9 @@ namespace APSIM.Shared.Utilities
                         return CompilationMode.CLR;
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                throw (e);
+                throw;
             }
         }
 

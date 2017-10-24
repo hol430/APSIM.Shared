@@ -10,7 +10,9 @@ namespace APSIM.Shared.Utilities
     using System.Data;
     using System.Runtime.InteropServices;
 
+
     /// <summary>A class representing an exception thrown by this library.</summary>
+    [Serializable]
     public class SQLiteException : Exception
     {
         /// <summary>Initializes a new instance of the <see cref="SQLiteException"/> class.</summary>
@@ -185,7 +187,7 @@ namespace APSIM.Shared.Utilities
         /// <param name="Value">The value.</param>
         /// <returns></returns>
         [DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
-        public static extern string sqlite3_bind_double(IntPtr Query, int ParameterNumber, double Value);
+        private static extern string sqlite3_bind_double(IntPtr Query, int ParameterNumber, double Value);
 
         /// <summary>Sqlite3_bind_ints the specified query.</summary>
         /// <param name="Query">The query.</param>
@@ -193,14 +195,14 @@ namespace APSIM.Shared.Utilities
         /// <param name="Value">The value.</param>
         /// <returns></returns>
         [DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
-        public static extern string sqlite3_bind_int(IntPtr Query, int ParameterNumber, int Value);
+        private static extern string sqlite3_bind_int(IntPtr Query, int ParameterNumber, int Value);
 
         /// <summary>Sqlite3_bind_nulls the specified query.</summary>
         /// <param name="Query">The query.</param>
         /// <param name="ParameterNumber">The parameter number.</param>
         /// <returns></returns>
         [DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
-        public static extern string sqlite3_bind_null(IntPtr Query, int ParameterNumber);
+        private static extern string sqlite3_bind_null(IntPtr Query, int ParameterNumber);
 
         /// <summary>Sqlite3_bind_texts the specified query.</summary>
         /// <param name="Query">The query.</param>
@@ -210,41 +212,41 @@ namespace APSIM.Shared.Utilities
         /// <param name="CallBack">The call back.</param>
         /// <returns></returns>
         [DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr sqlite3_bind_text(IntPtr Query, int ParameterNumber, string Value, int n, IntPtr CallBack);
+        private static extern IntPtr sqlite3_bind_text(IntPtr Query, int ParameterNumber, string Value, int n, IntPtr CallBack);
 
         /// <summary>Sqlite3_resets the specified query.</summary>
         /// <param name="Query">The query.</param>
         /// <returns></returns>
         [DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int sqlite3_reset(IntPtr Query);
+        private static extern int sqlite3_reset(IntPtr Query);
 
         /// <summary>Sqlite3_threadsafes this instance.</summary>
         /// <returns></returns>
         [DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int sqlite3_threadsafe();
+        private static extern int sqlite3_threadsafe();
 
         /// <summary>Sqlite3_busy_timeouts the specified database.</summary>
         /// <param name="db">The database.</param>
         /// <param name="ms">The ms.</param>
         /// <returns></returns>
         [DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int sqlite3_busy_timeout(IntPtr db, int ms);
+        private static extern int sqlite3_busy_timeout(IntPtr db, int ms);
 
         /// <summary>Sqlite3_db_mutexes the specified database.</summary>
         /// <param name="db">The database.</param>
         /// <returns></returns>
         [DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr sqlite3_db_mutex(IntPtr db);
+        private static extern IntPtr sqlite3_db_mutex(IntPtr db);
 
         /// <summary>Sqlite3_mutex_enters the specified sqlite3_mutex.</summary>
         /// <param name="sqlite3_mutex">The sqlite3_mutex.</param>
         [DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void sqlite3_mutex_enter(IntPtr sqlite3_mutex);
+        private static extern void sqlite3_mutex_enter(IntPtr sqlite3_mutex);
 
         /// <summary>Sqlite3_mutex_leaves the specified sqlite3_mutex.</summary>
         /// <param name="sqlite3_mutex">The sqlite3_mutex.</param>
         [DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void sqlite3_mutex_leave(IntPtr sqlite3_mutex);
+        private static extern void sqlite3_mutex_leave(IntPtr sqlite3_mutex);
         #endregion
 
         /// <summary>The _DB</summary>
