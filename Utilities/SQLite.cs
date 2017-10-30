@@ -512,6 +512,12 @@ namespace APSIM.Shared.Utilities
                 {
                     sqlite3_bind_null(query, i + 1);
                 }
+                // Enums have an underlying type of Int32, but we want to store
+                // their string representation, not their integer value
+                else if (values[i].GetType().IsEnum)
+                {
+                    sqlite3_bind_text(query, i + 1, values[i].ToString(), -1, new IntPtr(-1));
+                }
                 else
                 {
                     switch (Type.GetTypeCode(values[i].GetType()))
@@ -524,9 +530,11 @@ namespace APSIM.Shared.Utilities
                             }
                         case TypeCode.Int32:
                             {
-                                int integer = (int)values[i];
-                                sqlite3_bind_int(query, i + 1, integer);
-                                break;
+                                {
+                                    int integer = (int)values[i];
+                                    sqlite3_bind_int(query, i + 1, integer);
+                                    break;
+                                }
                             }
                         case TypeCode.Single:
                             {

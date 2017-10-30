@@ -47,9 +47,19 @@ namespace APSIM.Shared.Utilities
                 job = jobs.GetNextJobToRun();
             }
 
-            jobs.Completed();
+            Exception exceptionThrown = null;
+
+            try
+            {
+                jobs.Completed();
+            }
+            catch (Exception err)
+            {
+                exceptionThrown = err;
+            }
+
             if (AllJobsCompleted != null)
-                AllJobsCompleted.Invoke(this, new AllCompletedArgs());
+                AllJobsCompleted.Invoke(this, new AllCompletedArgs() { exceptionThrown = exceptionThrown });
         }
 
         /// <summary>Stop all jobs currently running</summary>
