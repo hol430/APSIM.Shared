@@ -233,7 +233,7 @@ namespace APSIM.Shared.Utilities
                     RootName = namePath.Substring(1, Pos - 1);
                     namePath = namePath.Substring(Pos + 1);
                 }
-                if (RootName.ToLower() != NameAttr(node).ToLower())
+                if (!String.Equals(RootName, NameAttr(node), StringComparison.CurrentCultureIgnoreCase))
                     return null;
                 if (namePath == "")
                     return node;
@@ -261,7 +261,7 @@ namespace APSIM.Shared.Utilities
             {
                 foreach (XmlNode Child in node.ChildNodes)
                 {
-                    if (NameAttr(Child).ToLower() == ChildName.ToLower())
+                    if (String.Equals(NameAttr(Child), ChildName, StringComparison.CurrentCultureIgnoreCase))
                     {
                         if (Remainder == "")
                             return Child;
@@ -295,7 +295,7 @@ namespace APSIM.Shared.Utilities
                 node = node.OwnerDocument.DocumentElement;
                 int Pos = typePath.IndexOf(Delimiter, 1);
                 string RootName = typePath.Substring(1, Pos - 1);
-                if (RootName.ToLower() != Type(node).ToLower())
+                if (!String.Equals(RootName, Type(node), StringComparison.CurrentCultureIgnoreCase))
                     return null;
                 typePath = typePath.Substring(Pos + 1);
             }
@@ -314,7 +314,7 @@ namespace APSIM.Shared.Utilities
             }
             foreach (XmlNode Child in node.ChildNodes)
             {
-                if (Type(Child).ToLower() == ChildType.ToLower())
+                if (String.Equals(Type(Child), ChildType, StringComparison.CurrentCultureIgnoreCase))
                 {
                     if (Remainder == "")
                         return Child;
@@ -331,7 +331,7 @@ namespace APSIM.Shared.Utilities
         /// <returns></returns>
         public static XmlNode FindRecursively(XmlNode node, string name)
         {
-            if (NameAttr(node).ToLower() == name.ToLower())
+            if (String.Equals(NameAttr(node), name, StringComparison.CurrentCultureIgnoreCase))
                 return node;
             foreach (XmlNode Child in node.ChildNodes)
             {
@@ -348,7 +348,7 @@ namespace APSIM.Shared.Utilities
         /// <param name="nodes">The nodes.</param>
         public static void FindAllRecursively(XmlNode node, string name, ref List<XmlNode> nodes)
         {
-            if (NameAttr(node).ToLower() == name.ToLower())
+            if (String.Equals(NameAttr(node), name, StringComparison.CurrentCultureIgnoreCase))
                 nodes.Add(node);
             foreach (XmlNode Child in node.ChildNodes)
                 FindAllRecursively(Child, name, ref nodes);
@@ -370,7 +370,7 @@ namespace APSIM.Shared.Utilities
         /// <param name="nodes">The nodes.</param>
         public static void FindAllRecursivelyByType(XmlNode node, string typeName, ref List<XmlNode> nodes)
         {
-            if (Type(node).ToLower() == typeName.ToLower())
+            if (String.Equals(Type(node), typeName, StringComparison.CurrentCultureIgnoreCase))
                 nodes.Add(node);
             foreach (XmlNode Child in node.ChildNodes)
                 FindAllRecursivelyByType(Child, typeName, ref nodes);
@@ -389,7 +389,8 @@ namespace APSIM.Shared.Utilities
             // ----------------------------------------------------
             foreach (XmlNode Child in node.ChildNodes)
             {
-                if (NameAttr(Child).ToLower() == nameFilter.ToLower() && Type(Child).ToLower() == typeFilter.ToLower())
+                if (String.Equals(NameAttr(Child), nameFilter, StringComparison.CurrentCultureIgnoreCase) && 
+                    String.Equals(Type(Child), typeFilter, StringComparison.CurrentCultureIgnoreCase))
                     return Child;
             }
             return null;
@@ -408,7 +409,7 @@ namespace APSIM.Shared.Utilities
             // ----------------------------------------------------
             foreach (XmlNode Child in node.ChildNodes)
             {
-                if (Type(Child).ToLower() == typeFilter.ToLower() && Child.InnerText == valueFilter)
+                if (String.Equals(Type(Child), typeFilter, StringComparison.CurrentCultureIgnoreCase) && Child.InnerText == valueFilter)
                     return Child;
             }
             return null;
@@ -426,7 +427,7 @@ namespace APSIM.Shared.Utilities
                 foreach (XmlNode Child in node.ChildNodes)
                 {
                     if (Child.Name != "#text" && Child.Name != "#comment" && Child.Name != "#cdata-section" &&
-                        typeFilter == null || typeFilter == "" || Type(Child).ToLower() == typeFilter.ToLower())
+                        typeFilter == null || typeFilter == "" || String.Equals(Type(Child), typeFilter, StringComparison.CurrentCultureIgnoreCase))
                         MatchingChildren.Add(Child);
                 }
             }
@@ -445,7 +446,7 @@ namespace APSIM.Shared.Utilities
                 foreach (XmlNode child in node.ChildNodes)
                 {
                     if (child.Name != "#text" && child.Name != "#comment" && child.Name != "#cdata-section" &&
-                        (typeFilter == null || typeFilter == "" || Type(child).ToLower() == typeFilter.ToLower()))
+                        (typeFilter == null || typeFilter == "" || String.Equals(Type(child), typeFilter, StringComparison.CurrentCultureIgnoreCase)))
                         matchingChildren.Add(child);
 
                     matchingChildren.AddRange(ChildNodesRecursively(child, typeFilter));
@@ -471,7 +472,7 @@ namespace APSIM.Shared.Utilities
                 foreach (XmlNode Child in node.ChildNodes)
                 {
                     if (Child.Name != "#text" && Child.Name != "#comment" && Child.Name != "#cdata-section" &&
-                        nameFilter == "" || NameAttr(Child).ToLower() == nameFilter.ToLower())
+                        nameFilter == "" || String.Equals(NameAttr(Child), nameFilter, StringComparison.CurrentCultureIgnoreCase))
                         MatchingChildren.Add(Child);
                 }
             }
@@ -696,7 +697,7 @@ namespace APSIM.Shared.Utilities
                 int Count = 0;
                 foreach (XmlNode Sibling in node.ParentNode.ChildNodes)
                 {
-                    if (NameAttr(Sibling).ToLower() == UniqueChildName.ToLower())
+                    if (String.Equals(NameAttr(Sibling), UniqueChildName, StringComparison.CurrentCultureIgnoreCase))
                         Count++;
                 }
                 if (Count == 1)
@@ -796,7 +797,7 @@ namespace APSIM.Shared.Utilities
 
             foreach (XmlNode Child in node.ChildNodes)
             {
-                if (NameAttr(Child).ToLower() == ChildNameToMatch.ToLower())
+                if (String.Equals(NameAttr(Child), ChildNameToMatch, StringComparison.CurrentCultureIgnoreCase))
                 {
                     if (PosDelimiter == -1)
                         return Child;
