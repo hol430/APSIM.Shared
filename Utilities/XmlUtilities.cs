@@ -454,7 +454,7 @@ namespace APSIM.Shared.Utilities
             return matchingChildren;
         }
 
-        /// <summary>Childs the name of the nodes by.</summary>
+        /// <summary>Return an array of children that match the specified filter.</summary>
         /// <param name="node">The node.</param>
         /// <param name="nameFilter">The name filter.</param>
         /// <returns></returns>
@@ -478,7 +478,7 @@ namespace APSIM.Shared.Utilities
             return MatchingChildren;
         }
 
-        /// <summary>Childs the names.</summary>
+        /// <summary>Return an array of the names of children of the given node.</summary>
         /// <param name="node">The node.</param>
         /// <param name="typeFilter">The type filter.</param>
         /// <returns></returns>
@@ -491,7 +491,7 @@ namespace APSIM.Shared.Utilities
             return Names;
         }
 
-        /// <summary>Values the specified child.</summary>
+        /// <summary>Return the Value of the given node.</summary>
         /// <param name="child">The child.</param>
         /// <param name="namePath">The name path.</param>
         /// <returns></returns>
@@ -518,7 +518,7 @@ namespace APSIM.Shared.Utilities
             ValueNode.InnerText = value;
         }
 
-        /// <summary>Valueses the specified node.</summary>
+        /// <summary>Return a list of Values for all children of a given node.</summary>
         /// <param name="node">The node.</param>
         /// <param name="typeFilter">The type filter.</param>
         /// <returns></returns>
@@ -537,7 +537,7 @@ namespace APSIM.Shared.Utilities
             return ReturnValues;
         }
 
-        /// <summary>Valueses the recursive.</summary>
+        /// <summary>Return a list of Values for all descendants of a given node.</summary>
         /// <param name="node">The node.</param>
         /// <param name="typeFilter">The type filter.</param>
         /// <returns></returns>
