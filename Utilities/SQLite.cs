@@ -364,7 +364,7 @@ namespace APSIM.Shared.Utilities
                 else if (dataType == typeof(int))
                     return Convert.ToInt32(values[rowIndex]);
                 else if (dataType == typeof(double))
-                    return Convert.ToDouble(values[rowIndex]);
+                    return Convert.ToDouble(values[rowIndex], System.Globalization.CultureInfo.InvariantCulture);
                 else if (dataType == typeof(DateTime))
                     return Convert.ToDateTime(values[rowIndex]);
                 else
