@@ -17,7 +17,7 @@ namespace APSIM.Shared.Utilities
     using DocumentFormat.OpenXml.Packaging;
     using DocumentFormat.OpenXml.Spreadsheet;
     using System.IO;
-    using Excel; 
+    using ExcelDataReader;
     
     
     /// <summary>
