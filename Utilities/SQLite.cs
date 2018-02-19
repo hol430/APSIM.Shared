@@ -9,7 +9,7 @@ namespace APSIM.Shared.Utilities
     using System.Collections.Generic;
     using System.Data;
     using System.Runtime.InteropServices;
-
+    using System.Linq;
 
     /// <summary>A class representing an exception thrown by this library.</summary>
     [Serializable]
@@ -46,45 +46,45 @@ namespace APSIM.Shared.Utilities
         private const int SQLITE_NULL = 5;
 
         /// <summary>The sqlit e_ ope n_ readonly</summary>
-        private const int SQLITE_OPEN_READONLY       =   0x00000001;  /* Ok for sqlite3_open_v2() */
+        private const int SQLITE_OPEN_READONLY = 0x00000001;  /* Ok for sqlite3_open_v2() */
         /// <summary>The sqlit e_ ope n_ readwrite</summary>
-        private const int SQLITE_OPEN_READWRITE      =   0x00000002; /* Ok for sqlite3_open_v2() */
+        private const int SQLITE_OPEN_READWRITE = 0x00000002; /* Ok for sqlite3_open_v2() */
         /// <summary>The sqlit e_ ope n_ create</summary>
-        private const int SQLITE_OPEN_CREATE         =   0x00000004; /* Ok for sqlite3_open_v2() */
+        private const int SQLITE_OPEN_CREATE = 0x00000004; /* Ok for sqlite3_open_v2() */
         /// <summary>The sqlit e_ ope n_ deleteonclose</summary>
-        private const int SQLITE_OPEN_DELETEONCLOSE  =   0x00000008; /* VFS only */
+        private const int SQLITE_OPEN_DELETEONCLOSE = 0x00000008; /* VFS only */
         /// <summary>The sqlit e_ ope n_ exclusive</summary>
-        private const int SQLITE_OPEN_EXCLUSIVE      =   0x00000010; /* VFS only */
+        private const int SQLITE_OPEN_EXCLUSIVE = 0x00000010; /* VFS only */
         /// <summary>The sqlit e_ ope n_ autoproxy</summary>
-        private const int SQLITE_OPEN_AUTOPROXY      =   0x00000020; /* VFS only */
+        private const int SQLITE_OPEN_AUTOPROXY = 0x00000020; /* VFS only */
         /// <summary>The sqlit e_ ope n_ URI</summary>
-        private const int SQLITE_OPEN_URI            =   0x00000040; /* Ok for sqlite3_open_v2() */
+        private const int SQLITE_OPEN_URI = 0x00000040; /* Ok for sqlite3_open_v2() */
         /// <summary>The sqlit e_ ope n_ memory</summary>
-        private const int SQLITE_OPEN_MEMORY         =   0x00000080; /* Ok for sqlite3_open_v2() */
+        private const int SQLITE_OPEN_MEMORY = 0x00000080; /* Ok for sqlite3_open_v2() */
         /// <summary>The sqlit e_ ope n_ mai n_ database</summary>
-        private const int SQLITE_OPEN_MAIN_DB        =   0x00000100; /* VFS only */
+        private const int SQLITE_OPEN_MAIN_DB = 0x00000100; /* VFS only */
         /// <summary>The sqlit e_ ope n_ tem p_ database</summary>
-        private const int SQLITE_OPEN_TEMP_DB        =   0x00000200; /* VFS only */
+        private const int SQLITE_OPEN_TEMP_DB = 0x00000200; /* VFS only */
         /// <summary>The sqlit e_ ope n_ transien t_ database</summary>
-        private const int SQLITE_OPEN_TRANSIENT_DB   =   0x00000400; /* VFS only */
+        private const int SQLITE_OPEN_TRANSIENT_DB = 0x00000400; /* VFS only */
         /// <summary>The sqlit e_ ope n_ mai n_ journal</summary>
-        private const int SQLITE_OPEN_MAIN_JOURNAL   =   0x00000800; /* VFS only */
+        private const int SQLITE_OPEN_MAIN_JOURNAL = 0x00000800; /* VFS only */
         /// <summary>The sqlit e_ ope n_ tem p_ journal</summary>
-        private const int SQLITE_OPEN_TEMP_JOURNAL   =   0x00001000; /* VFS only */
+        private const int SQLITE_OPEN_TEMP_JOURNAL = 0x00001000; /* VFS only */
         /// <summary>The sqlit e_ ope n_ subjournal</summary>
-        private const int SQLITE_OPEN_SUBJOURNAL     =   0x00002000; /* VFS only */
+        private const int SQLITE_OPEN_SUBJOURNAL = 0x00002000; /* VFS only */
         /// <summary>The sqlit e_ ope n_ maste r_ journal</summary>
-        private const int SQLITE_OPEN_MASTER_JOURNAL =   0x00004000; /* VFS only */
+        private const int SQLITE_OPEN_MASTER_JOURNAL = 0x00004000; /* VFS only */
         /// <summary>The sqlit e_ ope n_ nomutex</summary>
-        private const int SQLITE_OPEN_NOMUTEX        =   0x00008000; /* Ok for sqlite3_open_v2() */
+        private const int SQLITE_OPEN_NOMUTEX = 0x00008000; /* Ok for sqlite3_open_v2() */
         /// <summary>The sqlit e_ ope n_ fullmutex</summary>
-        private const int SQLITE_OPEN_FULLMUTEX      =   0x00010000; /* Ok for sqlite3_open_v2() */
+        private const int SQLITE_OPEN_FULLMUTEX = 0x00010000; /* Ok for sqlite3_open_v2() */
         /// <summary>The sqlit e_ ope n_ sharedcache</summary>
-        private const int SQLITE_OPEN_SHAREDCACHE    =   0x00020000; /* Ok for sqlite3_open_v2() */
+        private const int SQLITE_OPEN_SHAREDCACHE = 0x00020000; /* Ok for sqlite3_open_v2() */
         /// <summary>The sqlit e_ ope n_ privatecache</summary>
-        private const int SQLITE_OPEN_PRIVATECACHE   =   0x00040000; /* Ok for sqlite3_open_v2() */
+        private const int SQLITE_OPEN_PRIVATECACHE = 0x00040000; /* Ok for sqlite3_open_v2() */
         /// <summary>The sqlit e_ ope n_ wal</summary>
-        private const int SQLITE_OPEN_WAL            =   0x00080000; /* VFS only */
+        private const int SQLITE_OPEN_WAL = 0x00080000; /* VFS only */
 
         #region Externals
         //When using sqlite3 without .dll the platforms are intelligent enough to add the OS specific details.
@@ -181,6 +181,12 @@ namespace APSIM.Shared.Utilities
         [DllImport("sqlite3", EntryPoint = "sqlite3_column_double", CallingConvention = CallingConvention.Cdecl)]
         static extern double sqlite3_column_double(IntPtr stmHandle, int iCol);
 
+        [DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr sqlite3_column_blob(IntPtr stmHandle, int columnNumber);
+
+        [DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int sqlite3_column_bytes(IntPtr stmHandle, int columnNumber);
+        
         /// <summary>Sqlite3_bind_doubles the specified query.</summary>
         /// <param name="Query">The query.</param>
         /// <param name="ParameterNumber">The parameter number.</param>
@@ -213,6 +219,9 @@ namespace APSIM.Shared.Utilities
         /// <returns></returns>
         [DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr sqlite3_bind_text(IntPtr Query, int ParameterNumber, string Value, int n, IntPtr CallBack);
+
+        [DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int sqlite3_bind_blob(IntPtr Query, int iIndex, byte[] iParam, int iBytes, IntPtr iOperation);
 
         /// <summary>Sqlite3_resets the specified query.</summary>
         /// <param name="Query">The query.</param>
@@ -353,6 +362,12 @@ namespace APSIM.Shared.Utilities
                     dataType = typeof(double);
                 values.Add(value);
             }
+            public void addByteArrayValue(byte[] value)
+            {
+                if (dataType == null || dataType == typeof(byte[]))
+                    dataType = typeof(byte[]);
+                values.Add(value);
+            }
             public void addTextValue(string value)
             {
                 DateTime date;
@@ -385,6 +400,8 @@ namespace APSIM.Shared.Utilities
                     return Convert.ToDouble(values[rowIndex], System.Globalization.CultureInfo.InvariantCulture);
                 else if (dataType == typeof(DateTime))
                     return Convert.ToDateTime(values[rowIndex]);
+                else if (dataType == typeof(byte[]))
+                    return values[rowIndex];
                 else
                 {
                     if (values[rowIndex].GetType() == typeof(DateTime))
@@ -437,6 +454,14 @@ namespace APSIM.Shared.Utilities
                     {
                         IntPtr iptr = sqlite3_column_text(stmHandle, i);
                         columns[i].addTextValue(Marshal.PtrToStringAnsi(iptr));
+                    }
+                    else if (sqliteType == SQLITE_BLOB)
+                    {
+                        int length = sqlite3_column_bytes(stmHandle, i);
+                        byte[] bytes = new byte[length];
+                        Marshal.Copy(sqlite3_column_blob(stmHandle, i), bytes, 0, length);
+                        columns[i].addByteArrayValue(bytes);
+
                     }
                     else
                         columns[i].addNull();
@@ -504,7 +529,7 @@ namespace APSIM.Shared.Utilities
 
             if (sqlite3_prepare_v2(_db, query, query.Length,
                   out stmHandle, IntPtr.Zero) != SQLITE_OK)
-                throw new SQLiteException( Marshal.PtrToStringAnsi(sqlite3_errmsg(_db)));
+                throw new SQLiteException(Marshal.PtrToStringAnsi(sqlite3_errmsg(_db)));
 
             return stmHandle;
         }
@@ -538,43 +563,35 @@ namespace APSIM.Shared.Utilities
                 {
                     sqlite3_bind_text(query, i + 1, values[i].ToString(), -1, new IntPtr(-1));
                 }
-                else
+                else if (values[i].GetType() == typeof(DateTime))
                 {
-                    switch (Type.GetTypeCode(values[i].GetType()))
-                    {
-                        case TypeCode.DateTime:
-                            {
-                                DateTime d = (DateTime)values[i];
-                                sqlite3_bind_text(query, i + 1, d.ToString("yyyy-MM-dd hh:mm:ss"), -1, new IntPtr(-1));
-                                break;
-                            }
-                        case TypeCode.Int32:
-                            {
-                                {
-                                    int integer = (int)values[i];
-                                    sqlite3_bind_int(query, i + 1, integer);
-                                    break;
-                                }
-                            }
-                        case TypeCode.Single:
-                            {
-                                float f = (float)values[i];
-                                sqlite3_bind_double(query, i + 1, f);
-                                break;
-                            }
-                        case TypeCode.Double:
-                            {
-                                double d = (double)values[i];
-                                sqlite3_bind_double(query, i + 1, d);
-                                break;
-                            }
-                        default:
-                            {
-                                sqlite3_bind_text(query, i + 1, values[i] as string, -1, new IntPtr(-1));
-                                break;
-                            }
-                    }
+                    DateTime d = (DateTime)values[i];
+                    sqlite3_bind_text(query, i + 1, d.ToString("yyyy-MM-dd hh:mm:ss"), -1, new IntPtr(-1));
                 }
+                else if (values[i].GetType() == typeof(int))
+                {
+                    int integer = (int)values[i];
+                    sqlite3_bind_int(query, i + 1, integer);
+                }
+                else if (values[i].GetType() == typeof(float))
+                {
+                    float f = (float)values[i];
+                    sqlite3_bind_double(query, i + 1, f);
+                }
+                else if (values[i].GetType() == typeof(double))
+                {
+                    double d = (double)values[i];
+                    sqlite3_bind_double(query, i + 1, d);
+                }
+                else if (values[i].GetType() == typeof(byte[]))
+                {
+                    byte[] bytes = values[i] as byte[];
+                    IntPtr SQLITE_TRANSIENT = new IntPtr(-1); 
+                    sqlite3_bind_blob(query, i + 1, bytes, bytes.Length, SQLITE_TRANSIENT);
+                }
+                else
+                    sqlite3_bind_text(query, i + 1, values[i] as string, -1, new IntPtr(-1));
+
             }
 
             if (sqlite3_step(query) != SQLITE_DONE)
@@ -590,7 +607,7 @@ namespace APSIM.Shared.Utilities
         /// <returns></returns>
         public List<string> GetColumnNames(string tableName)
         {
-            string sql = "select * from "+tableName+" LIMIT 0";
+            string sql = "select * from " + tableName + " LIMIT 0";
 
             //prepare the statement
             IntPtr stmHandle = Prepare(sql);
@@ -599,10 +616,10 @@ namespace APSIM.Shared.Utilities
             int columnCount = sqlite3_column_count(stmHandle);
 
             List<string> columnNames = new List<string>();
-            for(int i = 0; i < columnCount; i++)
+            for (int i = 0; i < columnCount; i++)
             {
                 string columnName = Marshal.PtrToStringAnsi(sqlite3_column_name(stmHandle, i));
-                columnNames.Add(columnName);    
+                columnNames.Add(columnName);
             }
 
             Finalize(stmHandle);
@@ -619,6 +636,56 @@ namespace APSIM.Shared.Utilities
         public void MutexLeave()
         {
             sqlite3_mutex_leave(sqlite3_db_mutex(_db));
+        }
+
+        /// <summary>Return a list of column names for the specified table</summary>
+        /// <param name="tableName">The table name to get columns from.</param>
+        public List<string> GetTableColumns(string tableName)
+        {
+            List<string> columns = new List<string>();
+            DataTable columnData = ExecuteQuery("pragma table_info('" + tableName + "')");
+
+            foreach (DataRow row in columnData.Rows)
+                columns.Add(row["name"].ToString());
+
+            return columns;
+        }
+
+        /// <summary>
+        /// Drop (remove) columns from a table.
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <param name="colsToRemove"></param>
+        public void DropColumns(string tableName, IEnumerable<string> colsToRemove)
+        {
+            List<string> updatedTableColumns = GetTableColumns(tableName);
+            IEnumerable<string> columnsToRemove = colsToRemove.ToList();
+
+            // Remove the columns we don't want anymore from the table's list of columns
+            updatedTableColumns.RemoveAll(column => columnsToRemove.Contains(column));
+
+            string columnsSeperated = null;
+            foreach (string columnName in updatedTableColumns)
+            {
+                if (columnsSeperated != null)
+                    columnsSeperated += ",";
+                columnsSeperated += "[" + columnName + "]";
+            }
+            if (updatedTableColumns.Count > 0)
+            {
+                ExecuteNonQuery("BEGIN");
+
+                // Rename old table
+                ExecuteNonQuery("ALTER TABLE [" + tableName + "] RENAME TO [" + tableName + "_old]");
+
+                // Creating the new table based on old table
+                ExecuteNonQuery("CREATE TABLE [" + tableName + "] AS SELECT " + columnsSeperated + " FROM [" + tableName + "_old]");
+
+                // Drop old table
+                ExecuteNonQuery("DROP TABLE [" + tableName + "_old]");
+
+                ExecuteNonQuery("END");
+            }
         }
     }
 }
