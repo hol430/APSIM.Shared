@@ -979,6 +979,10 @@ namespace APSIM.Shared.Utilities
                         {
                             ReturnObj = Deserialise.Invoke(Serialiser, new object[] { reader });
                         }
+                        catch (System.Reflection.TargetInvocationException except)
+                        {
+                            throw except.InnerException;
+                        }
                         catch
                         {
                             ReturnObj = null;
