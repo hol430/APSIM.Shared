@@ -100,15 +100,17 @@ namespace APSIM.Shared.Utilities
             if (System.String.IsNullOrEmpty(path))
                 throw new ArgumentNullException("path");
 
-            // Convert to a relative directory 
+            // Make sure we have a relative directory 
             string relativeDirectory = Path.GetDirectoryName(relativePath);
             if (relativeDirectory != null)
             {
-                relativeDirectory += Path.DirectorySeparatorChar;
-                Uri baseUri = new Uri(relativeDirectory);
-                Uri fullUri = new Uri(path);
-                Uri relativeUri = baseUri.MakeRelativeUri(fullUri);
-                path = Uri.UnescapeDataString(relativeUri.ToString());
+                // Try getting rid of the relative directory.
+                path = path.Replace(relativeDirectory + Path.DirectorySeparatorChar, "");  // the relative path should not have a preceding \
+
+                // Try putting in a %root%.
+                string rootDirectory = System.IO.Directory.GetParent(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)).FullName;
+                // if (path.StartsWith(Path.Combine(rootDirectory, "Examples")))
+                path = path.Replace(rootDirectory, "%root%");
             }
 
             // Convert slashes.
