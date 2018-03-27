@@ -80,27 +80,30 @@ namespace APSIM.Shared.Utilities
                 ZipEntry entry;
                 while ((entry = zip.GetNextEntry()) != null)
                 {
-                    // Convert either '/' or '\' to the local directory separator
-                    string destFileName = destinationFolder + Path.DirectorySeparatorChar +
-                           entry.Name.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
-
-                    // Make sure the destination folder exists.
-                    Directory.CreateDirectory(Path.GetDirectoryName(destFileName));
-
-                    using (BinaryWriter fileOut = new BinaryWriter(new FileStream(destFileName, FileMode.Create)))
+                    if (!entry.IsDirectory)
                     {
-                        int size = 2048;
-                        byte[] data = new byte[2048];
-                        while (true)
+                        // Convert either '/' or '\' to the local directory separator
+                        string destFileName = destinationFolder + Path.DirectorySeparatorChar +
+                               entry.Name.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
+
+                        // Make sure the destination folder exists.
+                        Directory.CreateDirectory(Path.GetDirectoryName(destFileName));
+
+                        using (BinaryWriter fileOut = new BinaryWriter(new FileStream(destFileName, FileMode.Create)))
                         {
-                            size = zip.Read(data, 0, data.Length);
-                            if (size > 0)
-                                fileOut.Write(data, 0, size);
-                            else
-                                break;
+                            int size = 2048;
+                            byte[] data = new byte[2048];
+                            while (true)
+                            {
+                                size = zip.Read(data, 0, data.Length);
+                                if (size > 0)
+                                    fileOut.Write(data, 0, size);
+                                else
+                                    break;
+                            }
                         }
+                        filesCreated.Add(destFileName);
                     }
-                    filesCreated.Add(destFileName);
                 }
             }
             return filesCreated.ToArray();

@@ -278,8 +278,8 @@ namespace APSIM.Shared.Utilities
         {
             if (ProcessUtilities.CurrentOS.IsWindows && ProcessUtilities.CurrentOS.Is64BitProcess)
             {
-                string DllPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "x64", "sqlite3.dll");
-                IntPtr lib = LoadLibrary(DllPath);
+                //string DllPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "x64", "sqlite3.dll");
+                //IntPtr lib = LoadLibrary(DllPath);
             }
         }
 
@@ -649,6 +649,16 @@ namespace APSIM.Shared.Utilities
                 columns.Add(row["name"].ToString());
 
             return columns;
+        }
+
+        /// <summary>Return a list of table names</summary>
+        public List<string> GetTableNames()
+        {
+            List<string> tableNames = new List<string>();
+            DataTable tableData = ExecuteQuery("SELECT * FROM sqlite_master");
+            foreach (string tableName in DataTableUtilities.GetColumnAsStrings(tableData, "Name"))
+                tableNames.Add(tableName);
+            return tableNames;
         }
 
         /// <summary>

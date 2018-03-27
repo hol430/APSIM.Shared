@@ -287,7 +287,7 @@ namespace APSIM.Shared.Soils
         /// <param name="defaultValueForBelowProfile">The default value for below profile.</param>
         /// <param name="allowMissingValues">Tolerate missing values (double.NaN)?</param>
         /// <returns></returns>
-        internal static double[] MapConcentration(double[] fromValues, double[] fromThickness,
+        public static double[] MapConcentration(double[] fromValues, double[] fromThickness,
                                                   double[] toThickness,
                                                   double defaultValueForBelowProfile,
                                                   bool allowMissingValues = false)
