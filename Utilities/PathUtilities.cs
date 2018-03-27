@@ -109,6 +109,7 @@ namespace APSIM.Shared.Utilities
 
                 // Try putting in a %root%.
                 string rootDirectory = System.IO.Directory.GetParent(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)).FullName;
+                // if (path.StartsWith(Path.Combine(rootDirectory, "Examples")))
                 path = path.Replace(rootDirectory, "%root%");
             }
 
