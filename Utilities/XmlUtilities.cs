@@ -1099,6 +1099,28 @@ namespace APSIM.Shared.Utilities
             }
         }
 
+        /// <summary>
+        /// Serialise component as unicode
+        /// </summary>
+        /// <param name="component">The component.</param>
+        /// <param name="withNamespace">if set to <c>true</c> [with namespace].</param>
+        /// <param name="extraTypes">Optional extra types.</param>
+        /// <param name="deserializerFileName">Pre-compiled deserialiser file name</param>
+        /// <returns>Returns the full path of the added model if successful. Null otherwise.</returns>
+        public static string SerialiseUnicode(object component, bool withNamespace, string deserializerFileName = null, Type[] extraTypes = null)
+        {
+            StringWriterWithEncoding s = new StringWriterWithEncoding(Encoding.Unicode);
+            XmlTextWriter writer = new XmlTextWriter(s);
+            writer.Formatting = Formatting.Indented;
+
+            if (deserializerFileName == null)
+                deserializerFileName = System.IO.Path.ChangeExtension(Assembly.GetCallingAssembly().Location,
+                                                                      ".XmlSerializers.dll");
+            SerialiseWithOptions(component, withNamespace, deserializerFileName, extraTypes, writer);
+
+            return s.ToString();
+        }
+
         /// <summary>Clones the specified object.</summary>
         /// <param name="obj">The object to clone</param>
         /// <returns>The newly created object</returns>
