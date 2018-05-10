@@ -468,6 +468,7 @@ namespace APSIM.Shared.Utilities
                     for (int i = 0; i < Headings.Count; i++)
                     {
                         Headings[i] = Headings[i].Trim();
+                        Headings[i] = Headings[i].Trim('"');
                         Units.Add("()");
                     }
                 }
