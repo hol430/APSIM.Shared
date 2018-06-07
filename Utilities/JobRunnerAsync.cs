@@ -1,4 +1,4 @@
-﻿// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
 // <copyright file="JobRunnerAsync.cs" company="APSIM Initiative">
 //     Copyright (c) APSIM Initiative
 // </copyright>
@@ -83,7 +83,10 @@ namespace APSIM.Shared.Utilities
                         // If the job is computationally intensive and will potentially take some time 
                         // to run, then we want to keep track of how many of these are running.
                         if (typeof(IComputationalyTimeConsuming).IsAssignableFrom(job.GetType()))
-                            numberTasksRunning++;
+                        {
+                            lock (this)
+                                numberTasksRunning++;
+                        }
 
                         // Run the job.
                         Task.Run(() =>
@@ -100,14 +103,21 @@ namespace APSIM.Shared.Utilities
                             }
                             if (JobCompleted != null)
                                 JobCompleted.Invoke(this, jobCompleteArguments);
-                            numberTasksRunning--;
+
+                            lock (this)
+                                numberTasksRunning--;
                         });
                     }
                 }
-
+                int lTimesWaited = 0;
                 // All jobs now completed
                 while (numberTasksRunning > 0)
-                    Thread.Sleep(200);
+                {
+                    if (lTimesWaited > 60)
+                        break;
+                    lTimesWaited++;
+                    Thread.Sleep(1000);
+                }
 
                 jobs.Completed();
             }
