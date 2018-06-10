@@ -109,15 +109,9 @@ namespace APSIM.Shared.Utilities
                         });
                     }
                 }
-                int lTimesWaited = 0;
                 // All jobs now completed
                 while (numberTasksRunning > 0)
-                {
-                    if (lTimesWaited > 60)
-                        break;
-                    lTimesWaited++;
-                    Thread.Sleep(1000);
-                }
+                    Thread.Sleep(200);
 
                 jobs.Completed();
             }
