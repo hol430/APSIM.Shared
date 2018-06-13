@@ -193,7 +193,8 @@ namespace APSIM.Shared.Utilities
         {
             foreach (Attribute A in t.GetCustomAttributes(lookInBaseClasses))
             {
-                if (A.GetType() == attributeTypeToFind)
+                // Attributes can be derived from attributeTypeToFind e.g. ChildLink is derived from Link
+                if (attributeTypeToFind.IsAssignableFrom(A.GetType()))
                     return A;
             }
             return null;
