@@ -145,6 +145,15 @@ namespace APSIM.Shared.Utilities
             return parent;
         }
 
+        /// <summary>Find a parent to base our series on.</summary>
+        public static XmlNode ParentOfType(XmlNode node, string[] typeNames)
+        {
+            XmlNode parent = Parent(node);
+            while (parent != null && Array.IndexOf(typeNames, parent.Name) == -1)
+                parent = Parent(parent);
+            return parent;
+        }
+
         /// <summary>
         /// Return the full path of the node using the <code> <Name></Name> </code> element values.
         /// </summary>
@@ -361,6 +370,17 @@ namespace APSIM.Shared.Utilities
         {
             List<XmlNode> matches = new List<XmlNode>();
             FindAllRecursivelyByType(node, typeName, ref matches);
+            return matches;
+        }
+
+        /// <summary>Finds all XML nodes of the specified type (recursively).</summary>
+        /// <param name="node">The node. to search</param>
+        /// <param name="typeNames">Types to look for</param>
+        public static List<XmlNode> FindAllRecursivelyByTypes(XmlNode node, string[] typeNames)
+        {
+            List<XmlNode> matches = new List<XmlNode>();
+            foreach (string typeName in typeNames)
+                FindAllRecursivelyByType(node, typeName, ref matches);
             return matches;
         }
 
