@@ -918,6 +918,18 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>Deserialise from the specified file (XML)</summary>
+        /// <param name="inStream">An input stream.</param>
+        /// <param name="assembly">The assembly to search for types</param>
+        /// <returns>Returns the newly created object or null if not found.</returns>
+        public static object Deserialise(Stream inStream, Assembly assembly)
+        {
+            XmlDocument Doc = new XmlDocument();
+            Doc.Load(inStream);
+
+            return Deserialise(Doc.DocumentElement, assembly);
+        }
+
+        /// <summary>Deserialise from the specified file (XML)</summary>
         /// <param name="fileName">Name of the file.</param>
         /// <param name="assembly">The assembly to search for types</param>
         /// <returns>Returns the newly created object or null if not found.</returns>
