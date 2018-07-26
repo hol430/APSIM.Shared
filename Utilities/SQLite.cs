@@ -10,6 +10,7 @@ namespace APSIM.Shared.Utilities
     using System.Data;
     using System.Runtime.InteropServices;
     using System.Linq;
+    using System.Text;
 
     /// <summary>A class representing an exception thrown by this library.</summary>
     [Serializable]
@@ -26,7 +27,7 @@ namespace APSIM.Shared.Utilities
 
     /// <summary>A class for accessing an SQLite database.</summary>
     [Serializable]
-    public class SQLite
+    public class SQLite : IDatabaseConnection
     {
         /// <summary>The sqlit e_ ok</summary>
         private const int SQLITE_OK = 0;
@@ -186,7 +187,7 @@ namespace APSIM.Shared.Utilities
 
         [DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
         private static extern int sqlite3_column_bytes(IntPtr stmHandle, int columnNumber);
-        
+
         /// <summary>Sqlite3_bind_doubles the specified query.</summary>
         /// <param name="Query">The query.</param>
         /// <param name="ParameterNumber">The parameter number.</param>
@@ -272,7 +273,7 @@ namespace APSIM.Shared.Utilities
         // Windows FreeLibrary entry point
         //[DllImport("kernel32.dll")]
         //private static extern bool FreeLibrary(IntPtr hModule);       
-        
+
         // Static constructor to allow us to pre-load the correct dll (32 vs. 64 bit) on Windows
         static SQLite()
         {
@@ -411,7 +412,6 @@ namespace APSIM.Shared.Utilities
 
             }
         }
-
 
         /// <summary>
         /// Executes a query and stores the results in
@@ -586,7 +586,7 @@ namespace APSIM.Shared.Utilities
                 else if (values[i].GetType() == typeof(byte[]))
                 {
                     byte[] bytes = values[i] as byte[];
-                    IntPtr SQLITE_TRANSIENT = new IntPtr(-1); 
+                    IntPtr SQLITE_TRANSIENT = new IntPtr(-1);
                     sqlite3_bind_blob(query, i + 1, bytes, bytes.Length, SQLITE_TRANSIENT);
                 }
                 else
@@ -661,6 +661,14 @@ namespace APSIM.Shared.Utilities
             return tableNames;
         }
 
+        /// <summary>Does the specified table exist?</summary>
+        /// <param name="tableName">The table name to look for</param>
+        public bool TableExists(string tableName)
+        {
+            List<string> tableNames = GetTableNames();
+            return tableNames.Contains(tableName);
+        }
+
         /// <summary>
         /// Drop (remove) columns from a table.
         /// </summary>
@@ -696,6 +704,134 @@ namespace APSIM.Shared.Utilities
 
                 ExecuteNonQuery("END");
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <param name="columnNames"></param>
+        /// <returns></returns>
+        public string CreateInsertSQL(string tableName, List<string> columnNames)
+        {
+            StringBuilder sql = new StringBuilder();
+            sql.Append("INSERT INTO ");
+            sql.Append(tableName);
+            sql.Append('(');
+
+            for (int i = 0; i < columnNames.Count; i++)
+            {
+                if (i > 0)
+                    sql.Append(',');
+                sql.Append('[');
+                sql.Append(columnNames[i]);
+                sql.Append(']');
+            }
+            sql.Append(") VALUES (");
+
+            for (int i = 0; i < columnNames.Count; i++)
+            {
+                if (i > 0)
+                    sql.Append(',');
+                sql.Append('?');
+            }
+
+            sql.Append(')');
+
+            return sql.ToString();
+        }
+
+        /// <summary>Create a prepared insert query</summary>
+        /// <param name="tableName"></param>
+        /// <param name="columnNames">Column names</param>
+        private IntPtr CreateInsertQuery(string tableName, List<string> columnNames)
+        {
+            string sql = CreateInsertSQL(tableName, columnNames);
+            return Prepare(sql.ToString());
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <param name="columnNames"></param>
+        /// <param name="values"></param>
+        /// <returns></returns>
+        public int InsertRows(string tableName, List<string> columnNames, List<object[]> values)
+        {
+            IntPtr preparedInsertQuery = IntPtr.Zero;
+
+            try
+            {
+                // Create an insert query
+                preparedInsertQuery = CreateInsertQuery(tableName, columnNames);
+                for (int rowIndex = 0; rowIndex < values.Count; rowIndex++)
+                    BindParametersAndRunQuery(preparedInsertQuery, values[rowIndex]);
+            }
+            finally
+            {
+                if (preparedInsertQuery != IntPtr.Zero)
+                    Finalize(preparedInsertQuery);
+            }
+            return 0;
+        }
+
+        /// <summary>Convert .NET type into an SQLite type</summary>
+        public string GetDBDataTypeName(object value)
+        {
+            // Convert the value we found above into an SQLite data type string and return it.
+            Type type = null;
+            if (value == null)
+                return null;
+            else
+                type = value.GetType();
+
+            if (type == null)
+                return "integer";
+            else if (type.ToString() == "System.DateTime")
+                return "date";
+            else if (type.ToString() == "System.Int32")
+                return "integer";
+            else if (type.ToString() == "System.Single")
+                return "real";
+            else if (type.ToString() == "System.Double")
+                return "real";
+            else
+                return "char(50)";
+        }
+
+        /// <summary>Create the new table</summary>
+        public void CreateTable(string tableName, List<string> colNames, List<string> colTypes)
+        {
+            StringBuilder sql = new StringBuilder();
+
+            for (int c = 0; c < colNames.Count; c++)
+            {
+                if (sql.Length > 0)
+                    sql.Append(',');
+
+                sql.Append("[");
+                sql.Append(colNames[c]);
+                sql.Append("] ");
+                if (colTypes[c] == null)
+                    sql.Append("integer");
+                else
+                    sql.Append(colTypes[c]);
+            }
+
+            sql.Insert(0, "CREATE TABLE " + tableName + " (");
+            sql.Append(')');
+            ExecuteNonQuery(sql.ToString());
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public string AsSQLString(DateTime value)
+        {
+            return value.ToString("yyyy-MM-dd hh:mm:ss"); 
         }
     }
 }
