@@ -137,6 +137,7 @@
     <Compile Include="Soils\SwimWaterTable.cs" />
     <Compile Include="Soils\Unit.cs" />
     <Compile Include="Soils\Water.cs" />
+    <Compile Include="Utilities\DatabaseUtilities.cs" />
     <Compile Include="Utilities\ExcelUtilities.cs" />
     <Compile Include="Utilities\ApsimTextFile.cs" />
     <Compile Include="Utilities\IComputationalyTimeConsuming.cs" />
