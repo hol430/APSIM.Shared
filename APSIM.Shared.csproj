@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>APSIM.Shared</RootNamespace>
     <AssemblyName>APSIM.Shared</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -95,6 +95,9 @@
     <Reference Include="ExcelDataReader.DataSet, Version=3.4.0.0, Culture=neutral, PublicKeyToken=93517dbe6a4012fa, processorArchitecture=MSIL">
       <HintPath>..\ApsimX\packages\ExcelDataReader.DataSet.3.4.0\lib\net45\ExcelDataReader.DataSet.dll</HintPath>
     </Reference>
+    <Reference Include="FirebirdSql.Data.FirebirdClient">
+      <HintPath>..\ApsimX\packages\FirebirdSql.Data.FirebirdClient.6.1.0\lib\net452\FirebirdSql.Data.FirebirdClient.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -135,7 +138,9 @@
     <Compile Include="Soils\Water.cs" />
     <Compile Include="Utilities\ExcelUtilities.cs" />
     <Compile Include="Utilities\ApsimTextFile.cs" />
+    <Compile Include="Utilities\Firebird.cs" />
     <Compile Include="Utilities\IComputationalyTimeConsuming.cs" />
+    <Compile Include="Utilities\IDatabaseConnection.cs" />
     <Compile Include="Utilities\IJobRunner.cs" />
     <Compile Include="Utilities\IRunnable.cs" />
     <Compile Include="Utilities\IJobManager.cs" />
