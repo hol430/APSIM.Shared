@@ -83,7 +83,7 @@ namespace APSIM.Shared.Soils
         /// <returns></returns>
         static public int FindLayerIndex(Soil soil, double depth)
         {
-            return Array.FindIndex(ToCumThickness(soil.Water.Thickness), d => d > depth);
+            return Array.FindIndex(ToCumThickness(soil.Water.Thickness), d => d >= depth);
         }
 
     }
