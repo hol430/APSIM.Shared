@@ -542,5 +542,28 @@ namespace APSIM.Shared.Utilities
 
             return types;
         }
+
+        /// <summary>
+        /// Convert an enum value to a string. Looks for an attribute and uses that if found.
+        /// </summary>
+        public static string EnumToString<T>(T enumerationValue) where T : struct
+        {
+            Type type = enumerationValue.GetType();
+            if (!type.IsEnum)
+                throw new ArgumentException("EnumerationValue must be of Enum type", "enumerationValue");
+
+            // Tries to find a DescriptionAttribute for a potential friendly name
+            // for the enum
+            MemberInfo[] memberInfo = type.GetMember(enumerationValue.ToString());
+            if (memberInfo != null && memberInfo.Length > 0)
+            {
+                object[] attrs = memberInfo[0].GetCustomAttributes(inherit: false);
+
+                if (attrs != null && attrs.Length > 0)
+                    return (attrs[0]).ToString();
+            }
+            //If we have no description attribute, just return the ToString of the enum
+            return enumerationValue.ToString();
+        }
     }
 }
