@@ -29,8 +29,11 @@ namespace APSIM.Shared.Utilities
             // -----------------------------------------------------------------
             XmlNode NewNode = document.CreateElement(type);
             if (name != "")
-                SetAttribute(NewNode, "name", name);
-            return NewNode;
+			{
+				SetAttribute(NewNode, "name", name);
+                XmlUtilities.SetValue(NewNode, "Name", name);
+            }
+			return NewNode;
         }
 
         /// <summary>
