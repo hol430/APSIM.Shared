@@ -399,6 +399,17 @@ namespace APSIM.Shared.Utilities
                 FindAllRecursivelyByType(Child, typeName, ref nodes);
         }
 
+        /// <summary>Tests if an XML node is of a given type.</summary>
+        /// <param name="node">The node.</param>
+        /// <param name="typeName">Name of the type.</param>
+        public static bool IsType(XmlNode node, string typeName)
+        {
+            if (String.Equals(Type(node), typeName, StringComparison.CurrentCultureIgnoreCase))
+                return true;
+            else
+                return false;
+        }
+
         /// <summary>Childs the type of the by name and.</summary>
         /// <param name="node">The node.</param>
         /// <param name="nameFilter">The name filter.</param>
