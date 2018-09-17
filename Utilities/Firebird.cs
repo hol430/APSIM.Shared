@@ -11,6 +11,7 @@ namespace APSIM.Shared.Utilities
     using System.Linq;
     using System.Text;
     using FirebirdSql.Data.FirebirdClient;
+    using System.IO;
 
     /// <summary>
     /// A wrapper for a Firebird database connection
@@ -41,9 +42,16 @@ namespace APSIM.Shared.Utilities
         /// <exception cref="FirebirdException"></exception>
         public void OpenDatabase(string path, bool readOnly)
         {
+            // TODO: somewhere here I need to allow server connections
+
             if (!readOnly)
             {
-                FbConnection.CreateDatabase(GetConnectionString(path, "localhost", "SYSDBA", "masterkey"));
+                if (!File.Exists(path))
+                {
+                    // create a new database
+                    FbConnection.CreateDatabase(GetConnectionString(path, "localhost", "SYSDBA", "masterkey"), true);
+                    // TODO: may need to create tables here
+                }
             }
             OpenSQLConnection(path, "localhost", "SYSDBA", "masterkey");
 
@@ -63,17 +71,18 @@ namespace APSIM.Shared.Utilities
             FbConnectionStringBuilder cs = new FbConnectionStringBuilder();
 
             // If Not fbDBServerType = FbServerType.Embedded Then
-            cs.DataSource = source;
+            //cs.DataSource = source;
             cs.Password = pass;
             cs.UserID = user;
-            cs.Port = 3050;
+            //cs.Port = 3050;
             // End If
 
-            cs.Pooling = false;
+            cs.Pooling = true;
             cs.Database = dbpath;
-            cs.Charset = "UNICODE_FSS";
+            cs.Charset = "UTF8";
             cs.ConnectionLifeTime = 30;
             cs.ServerType = fbDBServerType;
+            cs.ClientLibrary = "fbclient.dll";
 
             fbDBDataSet.Locale = CultureInfo.InvariantCulture;
             string connstr = cs.ToString();
@@ -124,8 +133,13 @@ namespace APSIM.Shared.Utilities
         /// <param name="query">SQL query to execute</param>
         public void ExecuteNonQuery(string query)
         {
+            if (!IsOpen)
+            {
+                fbDBConnection.Open();
+            }
             if (IsOpen)
             {
+                //FbTransaction transaction = fbDBConnection.BeginTransaction();
                 query = AdjustQuotedFields(query);
                 FbCommand myCmd = new FbCommand(query, fbDBConnection);
                 myCmd.CommandType = CommandType.Text;
@@ -133,15 +147,19 @@ namespace APSIM.Shared.Utilities
                 try
                 {
                     myCmd.ExecuteNonQuery();
+                    //transaction.Commit();
                 }
                 catch (Exception ex)
                 {
+                    //transaction.Dispose();
+                    this.CloseDatabase();
                     throw new FirebirdException("Cannot execute the SQL statement\r\n " + query + "\r\n" + ex.Message);
                 }
                 finally
                 {
                     if (myCmd != null)
                     {
+                        //transaction.Dispose();
                         myCmd.Dispose();
                         myCmd = null;
                     }
@@ -204,10 +222,10 @@ namespace APSIM.Shared.Utilities
             }
 
             /// <summary>
-            /// 
+            /// Get the value object for this column at a rowIndex
             /// </summary>
-            /// <param name="rowIndex"></param>
-            /// <returns></returns>
+            /// <param name="rowIndex">The row index</param>
+            /// <returns>The value object</returns>
             internal object GetValue(int rowIndex)
             {
                 if (rowIndex >= values.Count)
@@ -240,6 +258,8 @@ namespace APSIM.Shared.Utilities
         {
             DataTable dt = null;
 
+            if (!IsOpen)
+                fbDBConnection.Open();  // assume the connection string has been set already
             if (IsOpen)
             {
                 query = AdjustQuotedFields(query);
@@ -255,6 +275,7 @@ namespace APSIM.Shared.Utilities
                 }
                 catch (Exception ex)
                 {
+                    this.CloseDatabase();
                     throw new FirebirdException("Cannot execute the SQL statement \r\n" + query + "\r\n" + ex.Message);
                 }
                 finally
@@ -360,13 +381,13 @@ namespace APSIM.Shared.Utilities
             if (IsOpen)
             {
                 string sql = "select rdb$field_name from rdb$relation_fields ";
-                sql += "where rdb$relation_name = '" + tableName.ToUpper() + "' ";
+                sql += "where rdb$relation_name = '" + tableName + "' ";
                 sql += "order by rdb$field_position; ";
 
                 DataTable dt = ExecuteQuery(sql);
                 foreach (DataRow dr in dt.Rows)
                 {
-                    columnNames.Add((string)dr[0]);
+                    columnNames.Add(((string)dr[0]).Trim());
                 }
             }
             return columnNames;
@@ -395,7 +416,7 @@ namespace APSIM.Shared.Utilities
                 DataTable dt = ExecuteQuery(sql);
                 foreach (DataRow dr in dt.Rows)
                 {
-                    tableNames.Add((string)dr[0]);
+                    tableNames.Add(((string)dr[0]).Trim());
                 }
             }
             return tableNames;
@@ -431,8 +452,7 @@ namespace APSIM.Shared.Utilities
             }
             if (updatedTableColumns.Count > 0)
             {
-                ExecuteNonQuery("BEGIN");
-
+                
                 // Rename old table
                 ExecuteNonQuery("ALTER TABLE \"" + tableName + "\" RENAME TO \"" + tableName + "_old\"");
 
@@ -441,9 +461,19 @@ namespace APSIM.Shared.Utilities
 
                 // Drop old table
                 ExecuteNonQuery("DROP TABLE \"" + tableName + "_old\"");
-
-                ExecuteNonQuery("END");
             }
+        }
+
+        /// <summary>
+        /// Do and ALTER on the db table and add a column
+        /// </summary>
+        /// <param name="tableName">The table name</param>
+        /// <param name="columnName">The column to add</param>
+        /// <param name="columnType">The db column type</param>
+        public void AddColumn(string tableName, string columnName, string columnType)
+        {
+            string sql = "ALTER TABLE \"" + tableName + "\" ADD \"" + columnName + "\" " + columnType;
+            this.ExecuteNonQuery(sql);
         }
 
         /// <summary>
@@ -469,15 +499,15 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="tableName"></param>
-        /// <param name="columnNames"></param>
+        /// <param name="tableName">Table name</param>
+        /// <param name="columnNames">Column names</param>
         /// <returns></returns>
         public string CreateInsertSQL(string tableName, List<string> columnNames)
         {
             StringBuilder sql = new StringBuilder();
-            sql.Append("INSERT INTO ");
+            sql.Append("INSERT INTO \"");
             sql.Append(tableName);
-            sql.Append('(');
+            sql.Append("\"(");
 
             for (int i = 0; i < columnNames.Count; i++)
             {
@@ -510,23 +540,28 @@ namespace APSIM.Shared.Utilities
         /// <returns></returns>
         public int InsertRows(string tableName, List<string> columnNames, List<object[]> values)
         {
-            FbTransaction myTransaction = fbDBConnection.BeginTransaction();
-
-            try
-            {
-                // Create an insert query
-                string sql = CreateInsertSQL(tableName, columnNames); 
-                for (int rowIndex = 0; rowIndex < values.Count; rowIndex++)
-                    BindParametersAndRunQuery(myTransaction, sql, values[rowIndex]);
-            }
-            catch
-            {
-                throw new FirebirdException("Cannot insert rows");
-            }
-
             lock (lockThis)
             {
+                FbTransaction myTransaction = fbDBConnection.BeginTransaction();
+
+                int index = 0;
+                try
+                {
+                    // Create an insert query
+                    string sql = CreateInsertSQL(tableName, columnNames);
+                    for (int rowIndex = 0; rowIndex < values.Count; rowIndex++)
+                    {
+                        index = rowIndex;
+                        BindParametersAndRunQuery(myTransaction, sql, values[rowIndex]);
+                    }
+                }
+                catch
+                {
+                    throw new FirebirdException("Cannot insert row for " + tableName + " in InsertRows():" + String.Join(", ", values[index].ToString()).ToArray());
+                }
+
                 myTransaction.Commit();
+                myTransaction.Dispose();
             }
             return 0;
         }
@@ -576,7 +611,7 @@ namespace APSIM.Shared.Utilities
                     sql.Append(colTypes[c]);
             }
 
-            sql.Insert(0, "CREATE TABLE " + tableName + " (");
+            sql.Insert(0, "CREATE TABLE \"" + tableName + "\" (");
             sql.Append(')');
             ExecuteNonQuery(sql.ToString());
         }

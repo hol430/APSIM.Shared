@@ -707,6 +707,18 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>
+        /// Do and ALTER on the db table and add a column
+        /// </summary>
+        /// <param name="tableName">The table name</param>
+        /// <param name="columnName">The column to add</param>
+        /// <param name="columnType">The db column type</param>
+        public void AddColumn(string tableName, string columnName, string columnType)
+        {
+            string sql = "ALTER TABLE [" + tableName + "] ADD COLUMN [" + columnName + "] " + columnType;
+            this.ExecuteNonQuery(sql);
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="tableName"></param>
@@ -742,7 +754,7 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>Create a prepared insert query</summary>
-        /// <param name="tableName"></param>
+        /// <param name="tableName">The table name</param>
         /// <param name="columnNames">Column names</param>
         private IntPtr CreateInsertQuery(string tableName, List<string> columnNames)
         {
