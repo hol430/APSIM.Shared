@@ -62,7 +62,15 @@ namespace APSIM.Shared.Utilities
         void DropColumns(string tableName, IEnumerable<string> colsToRemove);
 
         /// <summary>
-        /// 
+        /// Do and ALTER on the db table and add a column
+        /// </summary>
+        /// <param name="tableName">The table name</param>
+        /// <param name="columnName">The column to add</param>
+        /// <param name="columnType">The db column type</param>
+        void AddColumn(string tableName, string columnName, string columnType);
+        
+        /// <summary>
+        /// Create an Insert statement
         /// </summary>
         /// <param name="tableName"></param>
         /// <param name="columnNames"></param>
