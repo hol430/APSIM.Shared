@@ -771,12 +771,11 @@ namespace APSIM.Shared.Utilities
         /// <returns></returns>
         public int InsertRows(string tableName, List<string> columnNames, List<object[]> values)
         {
-            IntPtr preparedInsertQuery = IntPtr.Zero;
+            IntPtr preparedInsertQuery = CreateInsertQuery(tableName, columnNames);
 
             try
             {
                 // Create an insert query
-                preparedInsertQuery = CreateInsertQuery(tableName, columnNames);
                 for (int rowIndex = 0; rowIndex < values.Count; rowIndex++)
                     BindParametersAndRunQuery(preparedInsertQuery, values[rowIndex]);
             }
