@@ -143,6 +143,7 @@
     <Compile Include="Utilities\IComputationalyTimeConsuming.cs" />
     <Compile Include="Utilities\IDatabaseConnection.cs" />
     <Compile Include="Utilities\IJobRunner.cs" />
+    <Compile Include="Utilities\IndexedDataTable.cs" />
     <Compile Include="Utilities\IRunnable.cs" />
     <Compile Include="Utilities\IJobManager.cs" />
     <Compile Include="Utilities\ImageUtilities.cs" />

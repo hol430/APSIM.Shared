@@ -213,6 +213,26 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>
+        /// Get a column as doubles
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="columnName"></param>
+        /// <returns></returns>
+        static public int[] GetColumnAsIntegers(DataView table, string columnName)
+        {
+            int numValues = table.Count;
+            int[] values = new int[numValues];
+            for (int row = 0; row != table.Count; row++)
+            {
+                if (table[row][columnName].ToString() == "")
+                    values[row] = int.MinValue;
+                else
+                    values[row] = Convert.ToInt32(table[row][columnName], System.Globalization.CultureInfo.InvariantCulture);
+            }
+            return values;
+        }
+
+        /// <summary>
         /// Get a column as doubles.
         /// </summary>
         /// <param name="table"></param>

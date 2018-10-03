@@ -290,6 +290,27 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>
+        /// Return a running average for the specified values.
+        /// </summary>
+        public static IList<double> RunningAverage(IList<double> values)
+        {
+            List<double> returnValues = new List<double>();
+
+            double sum = 0.0;
+            int count = 0;
+            foreach (double value in values)
+            {
+                if (!double.IsNaN(value))
+                {
+                    sum += value;
+                    count++;
+                    returnValues.Add(sum / count);
+                }
+            }
+            return returnValues;
+        }
+
+        /// <summary>
         /// Sum an array of numbers starting at startIndex up to (but not including) endIndex
         /// beginning with an initial value
         /// </summary>
