@@ -5,15 +5,18 @@
     using System.Data;
 
     /// <summary>
-    /// An indexed DataTable helper class. An index (column name / value pairs) is applied
+    /// An indexed DataTable. An index (column name / value pairs) is applied
     /// to the datatable. Thereafter, scalars or a vector of values can then be 'set' into 
     /// the table for the applied index. Rows and columns will be automatically added as 
     /// required when data is 'set' into the table.
     /// </summary>
     public class IndexedDataTable
     {
+        /// <summary>Underlying data table</summary>
+        private DataTable table;
+
         /// <summary>Internal data view that implements the index</summary>
-        DataView view;
+        private DataView view;
 
         /// <summary>List of column names that make up the index</summary>
         private IList<string> indexColumnNames;
@@ -22,11 +25,11 @@
         private IList<object> indexColumnValues;
 
         /// <summary>Constructor</summary>
-        /// <param name="table">The data table to work on</param>
         /// <param name="indexColumns">The names of the index columns</param>
-        public IndexedDataTable(DataTable table, IList<string> indexColumns)
+        public IndexedDataTable(IList<string> indexColumns)
         {
             indexColumnNames = indexColumns;
+            table = new DataTable();
             view = new DataView(table);
         }
 
@@ -76,6 +79,12 @@
                 view[i][columnName] = values[i];
         }
 
+        /// <summary>Return the underlying data table</summary>
+        public DataTable ToTable()
+        {
+            return table;
+        }
+
         /// <summary>Ensure columns exist in data table</summary>
         /// <param name="columnNames">The column names</param>
         /// <param name="columnValues">The values used to determine column data types</param>
@@ -103,10 +112,17 @@
         {
             while (view.Count < numRows)
             {
-                DataRow newRow = view.Table.NewRow();
-                view.Table.Rows.Add(newRow);
-                for (int i = 0; i < indexColumnNames.Count; i++)
-                    newRow[indexColumnNames[i]] = indexColumnValues[i];
+                if (view.Count == 0)
+                {
+                    DataRow newRow = view.Table.NewRow();
+                    view.Table.Rows.Add(newRow);
+                    if (indexColumnNames != null)
+                        for (int i = 0; i < indexColumnNames.Count; i++)
+                            newRow[indexColumnNames[i]] = indexColumnValues[i];
+                }
+                else
+                    view.Table.ImportRow(view[view.Count-1].Row);
+                
             }
         }
     }
