@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Data;
+    using System.Linq;
 
     /// <summary>
     /// An indexed DataTable. An index (column name / value pairs) is applied
@@ -33,26 +34,39 @@
             view = new DataView(table);
         }
 
+        /// <summary>Constructor</summary>
+        /// <param name="existingTable">Existing table to work with</param>
+        /// <param name="indexColumns">The names of the index columns</param>
+        public IndexedDataTable(DataTable existingTable, IList<string> indexColumns)
+        {
+            indexColumnNames = indexColumns;
+            table = existingTable;
+            view = new DataView(table);
+        }
+
         /// <summary>Set the tables unique index</summary>
         /// <param name="indexValues">List of column names that make up the index</param>
         public void SetIndex(object[] indexValues)
         {
             indexColumnValues = indexValues;
-            if (indexColumnValues.Count != indexColumnNames.Count)
-                throw new Exception("Invalid number of index values passed to IndexedDataTable.SetIndex method");
-
-            EnsureColumnsExist(indexColumnNames, indexColumnValues);
-
             string filter = null;
-            for (int i = 0; i < indexColumnNames.Count; i++)
+            if (indexColumnValues != null)
             {
-                if (filter != null)
-                    filter += " AND ";
-                filter += indexColumnNames[i] + " = ";
-                if (indexColumnValues[i] is string)
-                    filter += "'" + indexColumnValues[i] + "'";
-                else
-                    filter += indexColumnValues[i];
+                if (indexColumnValues.Count != indexColumnNames.Count)
+                    throw new Exception("Invalid number of index values passed to IndexedDataTable.SetIndex method");
+
+                EnsureColumnsExist(indexColumnNames, indexColumnValues);
+
+                for (int i = 0; i < indexColumnNames.Count; i++)
+                {
+                    if (filter != null)
+                        filter += " AND ";
+                    filter += indexColumnNames[i] + " = ";
+                    if (indexColumnValues[i] is string)
+                        filter += "'" + indexColumnValues[i] + "'";
+                    else
+                        filter += indexColumnValues[i];
+                }
             }
             view.RowFilter = filter;
         }
@@ -83,6 +97,34 @@
         public DataTable ToTable()
         {
             return table;
+        }
+
+        /// <summary>Return the underlying data table</summary>
+        public IList<T> Get<T>(string columnName)
+        {
+            T[] values = new T[view.Count];
+            for (int rowIndex = 0; rowIndex != view.Count; rowIndex++)
+                values[rowIndex] = (T) view[rowIndex][columnName];
+            return values;
+        }
+
+        /// <summary>Return a enumerable collection of groups where a group is 
+        /// defined by the current index.</summary>
+        public IEnumerable<IndexedDataTableGroupEnumerator> Groups()
+        {
+            SetIndex(null);
+
+            List<List<object>> allValues = new List<List<object>>();
+            foreach (string indexColumnName in indexColumnNames)
+                allValues.Add(Get<object>(indexColumnName).Distinct().ToList());
+            List<List<object>> allPermutations = MathUtilities.AllCombinationsOf<object>(allValues.ToArray());
+
+            foreach (var permutation in allPermutations)
+            {
+                SetIndex(permutation.ToArray());
+                if (view.Count > 0)
+                    yield return new IndexedDataTableGroupEnumerator(this, permutation.ToArray());
+            }
         }
 
         /// <summary>Ensure columns exist in data table</summary>
@@ -125,5 +167,6 @@
                 
             }
         }
+
     }
 }
