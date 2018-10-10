@@ -300,9 +300,9 @@ namespace APSIM.Shared.Utilities
         {
             int id;
             if (readOnly)
-                id = sqlite3_open_v2(path, out _db, SQLITE_OPEN_READONLY | SQLITE_OPEN_NOMUTEX, null);
+                id = sqlite3_open_v2(path, out _db, SQLITE_OPEN_READONLY | SQLITE_OPEN_FULLMUTEX, null);
             else
-                id = sqlite3_open_v2(path, out _db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_NOMUTEX | SQLITE_OPEN_CREATE, null);
+                id = sqlite3_open_v2(path, out _db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_FULLMUTEX | SQLITE_OPEN_CREATE, null);
 
             if (id != SQLITE_OK)
             {
