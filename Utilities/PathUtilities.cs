@@ -16,15 +16,17 @@ namespace APSIM.Shared.Utilities
     /// </summary>
     public class PathUtilities
     {
+        /// <summary>
+        /// Maximum allowed length of a file name on Windows.
+        /// </summary>
         private const int maxPathLength = 255;
 
         /// <summary>
-        /// Gets a short path name.
+        /// Gets a Windows short file name.
         /// </summary>
-        /// <param name="path"></param>
-        /// <param name="shortPath"></param>
-        /// <param name="shortPathLength"></param>
-        /// <returns></returns>
+        /// <param name="path">Path to the file.</param>
+        /// <param name="shortPath">Output value.</param>
+        /// <param name="shortPathLength">Maximum allowed length of a path.</param>
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         private static extern int GetShortPathName(
             [MarshalAs(UnmanagedType.LPTStr)]
@@ -35,10 +37,9 @@ namespace APSIM.Shared.Utilities
         );
 
         /// <summary>
-        /// 
+        /// Gets a Windows short file name.
         /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
+        /// <param name="path">Path to the file.</param>
         public static string GetShortPath(string path)
         {
             if (!File.Exists(path))
