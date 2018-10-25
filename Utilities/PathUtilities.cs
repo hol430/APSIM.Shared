@@ -8,12 +8,47 @@ namespace APSIM.Shared.Utilities
     using System;
     using System.IO;
     using System.Reflection;
+    using System.Runtime.InteropServices;
+    using System.Text;
 
     /// <summary>
     /// A collection of path utilities.
     /// </summary>
     public class PathUtilities
     {
+        /// <summary>
+        /// Maximum allowed length of a file name on Windows.
+        /// </summary>
+        private const int maxPathLength = 255;
+
+        /// <summary>
+        /// Gets a Windows short file name.
+        /// </summary>
+        /// <param name="path">Path to the file.</param>
+        /// <param name="shortPath">Output value.</param>
+        /// <param name="shortPathLength">Maximum allowed length of a path.</param>
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+        private static extern int GetShortPathName(
+            [MarshalAs(UnmanagedType.LPTStr)]
+                 string path,
+            [MarshalAs(UnmanagedType.LPTStr)]
+                 StringBuilder shortPath,
+            int shortPathLength
+        );
+
+        /// <summary>
+        /// Gets a Windows short file name.
+        /// </summary>
+        /// <param name="path">Path to the file.</param>
+        public static string GetShortPath(string path)
+        {
+            if (!File.Exists(path))
+                File.Create(path).Close();
+            var shortPath = new StringBuilder(maxPathLength);
+            GetShortPathName(path, shortPath, maxPathLength);
+            return shortPath.ToString();
+        }
+
         /// <summary>
         /// Convert the specified URL to a path.
         /// </summary>
