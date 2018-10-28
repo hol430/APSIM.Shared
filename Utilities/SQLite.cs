@@ -12,6 +12,103 @@ namespace APSIM.Shared.Utilities
     using System.Linq;
     using System.Text;
 
+    /// <summary>
+    /// A custom marshaler that allows us to pass strings to the native SQLite DLL as
+    /// the UTF-8 it expects. The default marshaling to a "string" mangles Unicode text
+    /// on Windows.
+    /// This code copied from https://www.codeproject.com/Articles/138614/Advanced-Topics-in-PInvoke-String-Marshaling
+    /// </summary>
+    public class UTF8Marshaler : ICustomMarshaler
+    {
+        static UTF8Marshaler static_instance;
+
+        /// <summary>
+        /// Marshals a managed string object into an allocated buffer holding UTF-8 bytes
+        /// </summary>
+        /// <param name="managedObj">The string object to be marshaled</param>
+        /// <returns></returns>
+        public IntPtr MarshalManagedToNative(object managedObj)
+        {
+            if (managedObj == null)
+                return IntPtr.Zero;
+            if (!(managedObj is string))
+                throw new MarshalDirectiveException(
+                       "UTF8Marshaler must be used on a string.");
+
+            // not null terminated
+            byte[] strbuf = Encoding.UTF8.GetBytes((string)managedObj);
+            IntPtr buffer = Marshal.AllocHGlobal(strbuf.Length + 1);
+            Marshal.Copy(strbuf, 0, buffer, strbuf.Length);
+
+            // write the terminating null
+            Marshal.WriteByte(buffer + strbuf.Length, 0);
+            return buffer;
+        }
+
+        /// <summary>
+        /// Marshals a native UTF-8 string into a managed string
+        /// </summary>
+        /// <param name="pNativeData">A char pointer to a native C-style UTF-8 string</param>
+        /// <returns>A string object holding the managed string</returns>
+        public unsafe object MarshalNativeToManaged(IntPtr pNativeData)
+        {
+            byte* walk = (byte*)pNativeData;
+
+            // find the end of the string
+            while (*walk != 0)
+            {
+                walk++;
+            }
+            int length = (int)(walk - (byte*)pNativeData);
+
+            // should not be null terminated
+            byte[] strbuf = new byte[length];
+            // skip the trailing null
+            Marshal.Copy((IntPtr)pNativeData, strbuf, 0, length);
+            string data = Encoding.UTF8.GetString(strbuf);
+            return data;
+        }
+
+        /// <summary>
+        /// Cleans up the buffer used to hold the native UTF-8 string
+        /// </summary>
+        /// <param name="pNativeData">A pointer to the buffer to be freed</param>
+        public void CleanUpNativeData(IntPtr pNativeData)
+        {
+            Marshal.FreeHGlobal(pNativeData);
+        }
+
+        /// <summary>
+        /// </summary>
+        /// <param name="managedObj"></param>
+        public void CleanUpManagedData(object managedObj)
+        {
+        }
+
+        /// <summary>
+        /// Returns the size of the unmanaged data to be marshaled
+        /// </summary>
+        /// <returns></returns>
+        public int GetNativeDataSize()
+        {
+            return -1;
+        }
+
+        /// <summary>
+        /// Creates a singleton instance of the marshaler
+        /// </summary>
+        /// <param name="cookie"></param>
+        /// <returns>The marshaler</returns>
+        public static ICustomMarshaler GetInstance(string cookie)
+        {
+            if (static_instance == null)
+            {
+                return static_instance = new UTF8Marshaler();
+            }
+            return static_instance;
+        }
+    }    
+
     /// <summary>A class representing an exception thrown by this library.</summary>
     [Serializable]
     public class SQLiteException : Exception
@@ -104,7 +201,8 @@ namespace APSIM.Shared.Utilities
         /// <param name="zVfs">The z VFS.</param>
         /// <returns></returns>
         [DllImport("sqlite3", EntryPoint = "sqlite3_open_v2", CallingConvention = CallingConvention.Cdecl)]
-        static extern int sqlite3_open_v2(string filename, out IntPtr db, int flags, string zVfs);
+        static extern int sqlite3_open_v2([MarshalAs(UnmanagedType.CustomMarshaler,
+         MarshalTypeRef=typeof(UTF8Marshaler))]string filename, out IntPtr db, int flags, string zVfs);
 
         /// <summary>Sqlite3_closes the specified database.</summary>
         /// <param name="db">The database.</param>
