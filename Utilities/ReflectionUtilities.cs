@@ -565,5 +565,25 @@ namespace APSIM.Shared.Utilities
             //If we have no description attribute, just return the ToString of the enum
             return enumerationValue.ToString();
         }
+
+
+        /// <summary>
+        /// Get a string from a resource file.
+        /// </summary>
+        /// <param name="resourceName"></param>
+        /// <returns></returns>
+        public static string GetResourceAsString(string resourceName)
+        {
+            string result;
+            var assembly = Assembly.GetCallingAssembly();
+            assembly.GetManifestResourceStream(resourceName);
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                result = reader.ReadToEnd();
+            }
+
+            return result;
+        }
     }
 }
