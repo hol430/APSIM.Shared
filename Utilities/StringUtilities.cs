@@ -879,6 +879,8 @@ namespace APSIM.Shared.Utilities
         /// <returns></returns>
         public static string RemoveTrailingString(string s, string remove)
         {
+            if (string.IsNullOrEmpty(s))
+                return string.Empty;
             if (s.EndsWith(remove))
             {
                 int pos = s.LastIndexOf(remove);
