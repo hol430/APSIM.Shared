@@ -368,6 +368,7 @@ namespace APSIM.Shared.Utilities
                 }
                 cmd.Prepare();
                 cmd.ExecuteNonQuery();
+                cmd.Dispose();
             }
         }
 
@@ -487,8 +488,8 @@ namespace APSIM.Shared.Utilities
             string sql = "SELECT COUNT(f.rdb$relation_name) ";
             sql += "from rdb$relation_fields f ";
             sql += "join rdb$relations r on f.rdb$relation_name = r.rdb$relation_name ";
-            sql += "and f.rdb$relation_name = '" + table.ToUpper() + "' ";
-            sql += "and f.rdb$field_name = '" + fieldname.ToUpper() + "' ";
+            sql += "and UPPER(f.rdb$relation_name) = '" + table.ToUpper() + "' ";
+            sql += "and UPPER(f.rdb$field_name) = '" + fieldname.ToUpper() + "' ";
             sql += "and r.rdb$view_blr is null ";
             sql += "and(r.rdb$system_flag is null or r.rdb$system_flag = 0);";
 
@@ -507,7 +508,7 @@ namespace APSIM.Shared.Utilities
             StringBuilder sql = new StringBuilder();
             sql.Append("INSERT INTO \"");
             sql.Append(tableName);
-            sql.Append("\"(");
+            sql.Append("\" (");
 
             for (int i = 0; i < columnNames.Count; i++)
             {
@@ -555,9 +556,9 @@ namespace APSIM.Shared.Utilities
                         BindParametersAndRunQuery(myTransaction, sql, values[rowIndex]);
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    throw new FirebirdException("Cannot insert row for " + tableName + " in InsertRows():" + String.Join(", ", values[index].ToString()).ToArray());
+                    throw new FirebirdException("Exception " + ex.Message + "\r\nCannot insert row for " + tableName + " in InsertRows():" + String.Join(", ", values[index].ToString()).ToArray());
                 }
 
                 myTransaction.Commit();
@@ -589,7 +590,7 @@ namespace APSIM.Shared.Utilities
             else if (type.ToString() == "System.Double")
                 return "DOUBLE PRECISION";
             else
-                return "VARCHAR(50)";
+                return "BLOB SUB_TYPE TEXT"; // return "VARCHAR(2500)";
         }
 
         /// <summary>Create the new table</summary>
