@@ -438,41 +438,19 @@ namespace APSIM.Shared.Utilities
         /// <param name="colsToRemove"></param>
         public void DropColumns(string tableName, IEnumerable<string> colsToRemove)
         {
-            List<string> updatedTableColumns = GetTableColumns(tableName);
-            IEnumerable<string> columnsToRemove = colsToRemove.ToList();
-
-            // Remove the columns we don't want anymore from the table's list of columns
-            updatedTableColumns.RemoveAll(column => columnsToRemove.Contains(column));
-
-            string columnsSeperated = null;
-            foreach (string columnName in updatedTableColumns)
-            {
-                if (columnsSeperated != null)
-                    columnsSeperated += ",";
-                columnsSeperated += "\"" + columnName + "\"";
-            }
-            if (updatedTableColumns.Count > 0)
-            {
-                
-                // Rename old table
-                ExecuteNonQuery("ALTER TABLE \"" + tableName + "\" RENAME TO \"" + tableName + "_old\"");
-
-                // Creating the new table based on old table
-                ExecuteNonQuery("CREATE TABLE \"" + tableName + "\" AS SELECT " + columnsSeperated + " FROM \"" + tableName + "_old\"");
-
-                // Drop old table
-                ExecuteNonQuery("DROP TABLE \"" + tableName + "_old\"");
-            }
+            foreach (string columnName in colsToRemove)
+                ExecuteNonQuery("ALTER TABLE \"" + tableName + "\" DROP \"" + columnName + "\"");
         }
 
         /// <summary>
-        /// Do and ALTER on the db table and add a column
+        /// Do an ALTER on the db table and add a column
         /// </summary>
         /// <param name="tableName">The table name</param>
         /// <param name="columnName">The column to add</param>
         /// <param name="columnType">The db column type</param>
         public void AddColumn(string tableName, string columnName, string columnType)
         {
+            columnName = columnName.Substring(0, Math.Min(31, columnName.Length));
             string sql = "ALTER TABLE \"" + tableName + "\" ADD \"" + columnName + "\" " + columnType;
             this.ExecuteNonQuery(sql);
         }
@@ -515,7 +493,8 @@ namespace APSIM.Shared.Utilities
                 if (i > 0)
                     sql.Append(',');
                 sql.Append("\"");
-                sql.Append(columnNames[i]);
+                ///// sql.Append(columnNames[i]);
+                sql.Append(columnNames[i].Substring(0, Math.Min(31, columnNames[i].Length))); ///// 
                 sql.Append("\"");
             }
             sql.Append(") VALUES (");
@@ -604,7 +583,8 @@ namespace APSIM.Shared.Utilities
                     sql.Append(',');
 
                 sql.Append("\"");
-                sql.Append(colNames[c]);
+                // sql.Append(colNames[c]);
+                sql.Append(colNames[c].Substring(0, Math.Min(31, colNames[c].Length))); ///// 
                 sql.Append("\" ");
                 if (colTypes[c] == null)
                     sql.Append("INTEGER");
