@@ -137,13 +137,27 @@ namespace APSIM.Shared.Utilities
             /// <summary>Return the standard error</summary>
             public string StdErr { get { if (error.Length == 0) return null; else return error.ToString(); } }
 
+            /// <summary>
+            /// If true, the child process' standard error/output will be written to this process' standard error/output.
+            /// </summary>
+            public bool WriteToConsole { get; private set; }
+
             /// <summary>Run the specified executable with the specified arguments and working directory.</summary>
-            public void Start(string executable, string arguments, string workingDirectory, bool redirectOutput)
+            /// <param name="executable">Path to the executable.</param>
+            /// <param name="arguments">Arguments which will be passed to the executable.</param>
+            /// <param name="workingDirectory">Directory in which the executable will be run.</param>
+            /// <param name="redirectOutput">If true, standard error/output will be collected.</param>
+            /// <param name="writeToConsole">
+            /// If true, the child process' standard error/output will be written to this process' standard error/output.
+            /// This has no effect if redirectOutput is false!
+            /// </param>
+            public void Start(string executable, string arguments, string workingDirectory, bool redirectOutput, bool writeToConsole = false)
             {
                 Executable = executable;
                 Arguments = arguments;
                 if (!File.Exists(executable))
                     throw new Exception("Cannot find executable " + executable + ". File not found.");
+                WriteToConsole = writeToConsole;
                 process = new Process();
                 process.StartInfo.FileName = executable;
                 process.StartInfo.Arguments = arguments;
@@ -200,8 +214,12 @@ namespace APSIM.Shared.Utilities
             /// <param name="outLine"></param>
             private void OutputHandler(object sendingProcess, DataReceivedEventArgs outLine)
             {
-                if (outLine.Data != null && outLine.Data != string.Empty)
+                if (!string.IsNullOrWhiteSpace(outLine.Data))
+                {
                     output.Append(outLine.Data + Environment.NewLine);
+                    if (WriteToConsole)
+                        Console.WriteLine(outLine.Data);
+                }
             }
 
             /// <summary>Handler for all strings written to StdErr</summary>
@@ -209,8 +227,12 @@ namespace APSIM.Shared.Utilities
             /// <param name="outLine"></param>
             private void ErrorHandler(object sendingProcess, DataReceivedEventArgs outLine)
             {
-                if (outLine.Data != null && outLine.Data != string.Empty)
+                if (!string.IsNullOrWhiteSpace(outLine.Data))
+                {
                     error.Append(outLine.Data + Environment.NewLine);
+                    if (WriteToConsole)
+                        Console.Error.WriteLine(outLine.Data);
+                }
             }
         }
 
