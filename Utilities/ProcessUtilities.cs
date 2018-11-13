@@ -122,9 +122,6 @@ namespace APSIM.Shared.Utilities
             /// <summary>Invoked when the process exits.</summary>
             public EventHandler Exited;
 
-            /// <summary>Should the child process' output be written to standard output?</summary>
-            private bool redirectOutput;
-
             /// <summary>Executable</summary>
             public string Executable { get; private set; }
 
@@ -143,7 +140,6 @@ namespace APSIM.Shared.Utilities
             /// <summary>Run the specified executable with the specified arguments and working directory.</summary>
             public void Start(string executable, string arguments, string workingDirectory, bool redirectOutput)
             {
-                this.redirectOutput = redirectOutput;
                 Executable = executable;
                 Arguments = arguments;
                 if (!File.Exists(executable))
@@ -156,19 +152,25 @@ namespace APSIM.Shared.Utilities
                 process.StartInfo.CreateNoWindow = true;
                 if (!process.StartInfo.UseShellExecute)
                 {
-                    process.StartInfo.RedirectStandardOutput = true;
-                    process.StartInfo.RedirectStandardError = true;
+                    process.StartInfo.RedirectStandardOutput = redirectOutput;
+                    process.StartInfo.RedirectStandardError = redirectOutput;
                 }
                 process.StartInfo.WorkingDirectory = workingDirectory;
 
                 // Set our event handler to asynchronously read the output.
-                process.OutputDataReceived += new DataReceivedEventHandler(OutputHandler);
-                process.ErrorDataReceived += new DataReceivedEventHandler(ErrorHandler);
+                if (redirectOutput)
+                {
+                    process.OutputDataReceived += new DataReceivedEventHandler(OutputHandler);
+                    process.ErrorDataReceived += new DataReceivedEventHandler(ErrorHandler);
+                }
                 process.Exited += OnExited;
                 process.EnableRaisingEvents = true;
                 process.Start();
-                process.BeginOutputReadLine();
-                process.BeginErrorReadLine();
+                if (redirectOutput)
+                {
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+                }
             }
 
             /// <summary>Process has exited</summary>
@@ -198,12 +200,8 @@ namespace APSIM.Shared.Utilities
             /// <param name="outLine"></param>
             private void OutputHandler(object sendingProcess, DataReceivedEventArgs outLine)
             {
-                if (!string.IsNullOrWhiteSpace(outLine.Data))
-                {
+                if (outLine.Data != null && outLine.Data != string.Empty)
                     output.Append(outLine.Data + Environment.NewLine);
-                    if (redirectOutput)
-                        Console.WriteLine(outLine.Data);
-                }
             }
 
             /// <summary>Handler for all strings written to StdErr</summary>
@@ -211,12 +209,8 @@ namespace APSIM.Shared.Utilities
             /// <param name="outLine"></param>
             private void ErrorHandler(object sendingProcess, DataReceivedEventArgs outLine)
             {
-                if (!string.IsNullOrWhiteSpace(outLine.Data))
-                {
+                if (outLine.Data != null && outLine.Data != string.Empty)
                     error.Append(outLine.Data + Environment.NewLine);
-                    if (redirectOutput)
-                        Console.Error.WriteLine(outLine.Data);
-                }
             }
         }
 
