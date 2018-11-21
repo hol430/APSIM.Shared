@@ -239,13 +239,13 @@ namespace APSIM.Shared.Utilities
                                     ctSymbol.m_type = ExpressionType.Bracket;
                                     break;
                                 case "-":
-                                    if (m_equation.Count < 1 || ((Symbol)m_equation[m_equation.Count - 1]).m_name == "(" || ((Symbol)m_equation[m_equation.Count - 1]).m_name == "{")
+                                    ctSymbol.m_type = ExpressionType.Operator;
+                                    if (m_equation.Count < 1 || ((Symbol)m_equation[m_equation.Count - 1]).m_type == ExpressionType.Operator || ((Symbol)m_equation[m_equation.Count - 1]).m_name == "(" || ((Symbol)m_equation[m_equation.Count - 1]).m_name == "{")
                                     {
                                         // A minus sign is always unary if it immediately follows another operator or left parenthesis.
                                         // We need to somehow differentiate between unary and binary minus operations.
                                         // I have arbitrarily chosen to use -- for unary minus.
                                         ctSymbol.m_name = "--";
-                                        ctSymbol.m_type = ExpressionType.Operator;
                                     }
                                     break;
                                 default:
@@ -280,7 +280,7 @@ namespace APSIM.Shared.Utilities
                                     break;
                                 case "-":
                                     ctSymbol.m_type = ExpressionType.Operator;
-                                    if (((Symbol)m_equation[m_equation.Count - 1]).m_name == "(" || ((Symbol)m_equation[m_equation.Count - 1]).m_name == "{")
+                                    if (m_equation.Count < 1 || ((Symbol)m_equation[m_equation.Count - 1]).m_type == ExpressionType.Operator || ((Symbol)m_equation[m_equation.Count - 1]).m_name == "(" || ((Symbol)m_equation[m_equation.Count - 1]).m_name == "{")
                                     {
                                         // A minus sign is always unary if it immediately follows another operator or left parenthesis.
                                         // We need to somehow differentiate between unary and binary minus operations.
@@ -332,13 +332,13 @@ namespace APSIM.Shared.Utilities
                                     ctSymbol.m_type = ExpressionType.Bracket;
                                     break;
                                 case "-":
-                                    if (((Symbol)m_equation[m_equation.Count - 1]).m_name == "(" || ((Symbol)m_equation[m_equation.Count - 1]).m_name == "{")
+                                    ctSymbol.m_type = ExpressionType.Operator;
+                                    if (m_equation.Count < 1 || ((Symbol)m_equation[m_equation.Count - 1]).m_type == ExpressionType.Operator || ((Symbol)m_equation[m_equation.Count - 1]).m_name == "(" || ((Symbol)m_equation[m_equation.Count - 1]).m_name == "{")
                                     {
                                         // A minus sign is always unary if it immediately follows another operator or left parenthesis.
                                         // We need to somehow differentiate between unary and binary minus operations.
                                         // I have arbitrarily chosen to use -- for unary minus.
                                         ctSymbol.m_name = "--";
-                                        ctSymbol.m_type = ExpressionType.Operator;
                                     }
                                     break;
                                 default:
@@ -511,31 +511,29 @@ namespace APSIM.Shared.Utilities
         /// <param name="sym">The sym.</param>
         /// <returns></returns>
         /// <remarks>
-        /// I give unary minus a higher precedence than multiplication/division,
-        /// but lower precedence than exponentiation.
-        /// 
-        /// e.g.
+        /// I give unary minus a higher precedence than multiplication, division,
+        /// and exponentiation. e.g.
         /// 
         /// 10/-1*-2 = 20, not 5
-        /// -2^4 = -16, not 16
+        /// -2^4 = 16, not -16
         /// </remarks>
         protected int Precedence(Symbol sym)
         {
             switch (sym.m_type)
             {
                 case ExpressionType.Bracket:
-                    return 5;
+                    return 6;
                 case ExpressionType.EvalFunction:
-                    return 4;
+                    return 5;
                 case ExpressionType.Comma:
                     return 0;
             }
             switch (sym.m_name)
             {
                 case "^":
-                    return 4;
-                case "--":
                     return 3;
+                case "--":
+                    return 4;
                 case "/":
                 case "*":
                 case "%":
@@ -588,7 +586,7 @@ namespace APSIM.Shared.Utilities
                         }
                         else
                         {
-                            if (sym2.m_value > 0)
+                            if (!MathUtilities.FloatsAreEqual(sym2.m_value, 0))
                                 result.m_value = sym1.m_value / sym2.m_value;
                             else
                             {
