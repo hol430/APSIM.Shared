@@ -69,19 +69,19 @@ namespace APSIM.Shared.Utilities
                 throw new Exception("The Excel File must be an '.xlsx' file.");
             }
 
-            FileStream stream = File.Open(fileName, FileMode.Open, FileAccess.Read);
+            using (FileStream stream = File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                //Reading from a binary Excel file ('97-2003 format; *.xls)
+                //IExcelDataReader excelReader = ExcelReaderFactory.CreateBinaryReader(stream);
 
-            //Reading from a binary Excel file ('97-2003 format; *.xls)
-            //IExcelDataReader excelReader = ExcelReaderFactory.CreateBinaryReader(stream);
+                //Reading from a OpenXml Excel file (2007 format; *.xlsx)
+                IExcelDataReader excelReader = ExcelReaderFactory.CreateOpenXmlReader(stream);
 
-            //Reading from a OpenXml Excel file (2007 format; *.xlsx)
-            IExcelDataReader excelReader = ExcelReaderFactory.CreateOpenXmlReader(stream);
+                DataSet result = excelReader.AsDataSet();
+                data = result.Tables[sheetName];
 
-            DataSet result = excelReader.AsDataSet();
-            data = result.Tables[sheetName];
-
-            return data;
-
+                return data;
+            }
         }
     }
 }
