@@ -687,6 +687,8 @@ namespace APSIM.Shared.Utilities
                     IntPtr SQLITE_TRANSIENT = new IntPtr(-1);
                     sqlite3_bind_blob(query, i + 1, bytes, bytes.Length, SQLITE_TRANSIENT);
                 }
+                else if (values[i].GetType() == typeof(bool))
+                    sqlite3_bind_text(query, i + 1, values[i].ToString(), -1, new IntPtr(-1));
                 else
                     sqlite3_bind_text(query, i + 1, values[i] as string, -1, new IntPtr(-1));
 
