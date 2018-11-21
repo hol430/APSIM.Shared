@@ -187,10 +187,16 @@ namespace APSIM.Shared.Utilities
         /// <param name="equation">The equation.</param>
         public void Parse(string equation)
         {
+            // state 3 - building up a keyword inside temp
             int state = 1;
+
+            // We iterate over the expression character by character, but a phrase
+            // or keyword such as [Clock] is one symbol. 
+            // This string builder is used to build up a keyword from the expression,
+            // which is eventually stored in a symbol.
             StringBuilder temp = new StringBuilder();
             
-            Symbol ctSymbol;
+            Symbol ctSymbol = new Symbol();
             ctSymbol.m_values = null;
 
             m_bError = false;
@@ -199,11 +205,8 @@ namespace APSIM.Shared.Utilities
             m_equation.Clear();
             m_postfix.Clear();
 
-            int nPos;
             //-- Remove all white spaces from the equation string --
-            equation = equation.Trim();
-            while ((nPos = equation.IndexOf(' ')) != -1)
-                equation = equation.Remove(nPos, 1);
+            equation = equation.Replace(" ", "");
 
             for (int i = 0; i < equation.Length; i++)
             {
@@ -235,6 +238,16 @@ namespace APSIM.Shared.Utilities
                                 case "}":
                                     ctSymbol.m_type = ExpressionType.Bracket;
                                     break;
+                                case "-":
+                                    ctSymbol.m_type = ExpressionType.Operator;
+                                    if (m_equation.Count < 1 || ((Symbol)m_equation[m_equation.Count - 1]).m_type == ExpressionType.Operator || ((Symbol)m_equation[m_equation.Count - 1]).m_name == "(" || ((Symbol)m_equation[m_equation.Count - 1]).m_name == "{")
+                                    {
+                                        // A minus sign is always unary if it immediately follows another operator or left parenthesis.
+                                        // We need to somehow differentiate between unary and binary minus operations.
+                                        // I have arbitrarily chosen to use -- for unary minus.
+                                        ctSymbol.m_name = "--";
+                                    }
+                                    break;
                                 default:
                                     ctSymbol.m_type = ExpressionType.Operator;
                                     break;
@@ -264,6 +277,16 @@ namespace APSIM.Shared.Utilities
                                 case "{":
                                 case "}":
                                     ctSymbol.m_type = ExpressionType.Bracket;
+                                    break;
+                                case "-":
+                                    ctSymbol.m_type = ExpressionType.Operator;
+                                    if (m_equation.Count < 1 || ((Symbol)m_equation[m_equation.Count - 1]).m_type == ExpressionType.Operator || ((Symbol)m_equation[m_equation.Count - 1]).m_name == "(" || ((Symbol)m_equation[m_equation.Count - 1]).m_name == "{")
+                                    {
+                                        // A minus sign is always unary if it immediately follows another operator or left parenthesis.
+                                        // We need to somehow differentiate between unary and binary minus operations.
+                                        // I have arbitrarily chosen to use -- for unary minus.
+                                        ctSymbol.m_name = "--";
+                                    }
                                     break;
                                 default:
                                     ctSymbol.m_type = ExpressionType.Operator;
@@ -308,6 +331,16 @@ namespace APSIM.Shared.Utilities
                                 case "}":
                                     ctSymbol.m_type = ExpressionType.Bracket;
                                     break;
+                                case "-":
+                                    ctSymbol.m_type = ExpressionType.Operator;
+                                    if (m_equation.Count < 1 || ((Symbol)m_equation[m_equation.Count - 1]).m_type == ExpressionType.Operator || ((Symbol)m_equation[m_equation.Count - 1]).m_name == "(" || ((Symbol)m_equation[m_equation.Count - 1]).m_name == "{")
+                                    {
+                                        // A minus sign is always unary if it immediately follows another operator or left parenthesis.
+                                        // We need to somehow differentiate between unary and binary minus operations.
+                                        // I have arbitrarily chosen to use -- for unary minus.
+                                        ctSymbol.m_name = "--";
+                                    }
+                                    break;
                                 default:
                                     ctSymbol.m_type = ExpressionType.Operator;
                                     break;
@@ -345,8 +378,9 @@ namespace APSIM.Shared.Utilities
         {
             Symbol tpSym;
             Stack tpStack = new Stack();
-            foreach (Symbol sym in m_equation)
+            for (int i = 0; i < m_equation.Count; i++)
             {
+                Symbol sym = (Symbol)m_equation[i];
                 if ((sym.m_type == ExpressionType.Value) || (sym.m_type == ExpressionType.Variable))
                     m_postfix.Add(sym);
                 else if ((sym.m_name == "(") || (sym.m_name == "{"))
@@ -402,7 +436,7 @@ namespace APSIM.Shared.Utilities
                 else if (sym.m_type == ExpressionType.Operator)
                 {
                     tpSym1 = (Symbol)tpStack.Pop();
-                    if (tpStack.Count > 0)
+                    if (tpStack.Count > 0 && sym.m_name != "--")
                         tpSym2 = (Symbol)tpStack.Pop();
                     else
                         tpSym2 = new Symbol();
@@ -476,14 +510,20 @@ namespace APSIM.Shared.Utilities
         /// <summary>Precedences the specified sym.</summary>
         /// <param name="sym">The sym.</param>
         /// <returns></returns>
+        /// <remarks>
+        /// I give unary minus a higher precedence than multiplication, division,
+        /// and exponentiation. e.g.
+        /// 
+        /// -2^4 = 16, not -16
+        /// </remarks>
         protected int Precedence(Symbol sym)
         {
             switch (sym.m_type)
             {
                 case ExpressionType.Bracket:
-                    return 5;
+                    return 6;
                 case ExpressionType.EvalFunction:
-                    return 4;
+                    return 5;
                 case ExpressionType.Comma:
                     return 0;
             }
@@ -491,6 +531,8 @@ namespace APSIM.Shared.Utilities
             {
                 case "^":
                     return 3;
+                case "--":
+                    return 4;
                 case "/":
                 case "*":
                 case "%":
@@ -510,7 +552,10 @@ namespace APSIM.Shared.Utilities
         protected Symbol Evaluate(Symbol sym1, Symbol opr, Symbol sym2)
         {
             Symbol result;
-            result.m_name = sym1.m_name + opr.m_name + sym2.m_name;
+            if (opr.m_name == "--")
+                result.m_name = "-" + sym2.m_name;
+            else
+                result.m_name = sym1.m_name + opr.m_name + sym2.m_name;
             result.m_type = ExpressionType.Result;
             result.m_value = 0;
             result.m_values = null;
@@ -540,7 +585,7 @@ namespace APSIM.Shared.Utilities
                         }
                         else
                         {
-                            if (sym2.m_value > 0)
+                            if (!MathUtilities.FloatsAreEqual(sym2.m_value, 0))
                                 result.m_value = sym1.m_value / sym2.m_value;
                             else
                             {
@@ -586,6 +631,12 @@ namespace APSIM.Shared.Utilities
                     }
                     else
                         result.m_value = sym1.m_value - sym2.m_value;
+                    break;
+                case "--":
+                    if (sym2.m_values != null && sym2.m_values.Length > 0)
+                        result.m_values = MathUtilities.Multiply_Value(sym2.m_values, -1);
+                    else
+                        result.m_value = sym2.m_value * -1;
                     break;
                 default:
                     result.m_type = ExpressionType.Error;
