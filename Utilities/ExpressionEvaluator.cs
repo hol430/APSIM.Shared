@@ -585,7 +585,7 @@ namespace APSIM.Shared.Utilities
                         }
                         else
                         {
-                            if (!MathUtilities.FloatsAreEqual(sym2.m_value, 0))
+                            if (!MathUtilities.FloatsAreEqual(sym2.m_value, 0, 1E-12))
                                 result.m_value = sym1.m_value / sym2.m_value;
                             else
                             {
