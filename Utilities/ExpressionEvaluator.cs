@@ -514,7 +514,6 @@ namespace APSIM.Shared.Utilities
         /// I give unary minus a higher precedence than multiplication, division,
         /// and exponentiation. e.g.
         /// 
-        /// 10/-1*-2 = 20, not 5
         /// -2^4 = 16, not -16
         /// </remarks>
         protected int Precedence(Symbol sym)
