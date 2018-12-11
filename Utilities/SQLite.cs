@@ -389,6 +389,15 @@ namespace APSIM.Shared.Utilities
         /// <summary>Property to return true if the database is readonly.</summary>
         public bool IsReadOnly { get; private set; }
 
+        /// <summary>Begin a transaction.</summary>
+        public void BeginTransaction()
+        {
+        }
+
+        /// <summary>End a transaction.</summary>
+        public void EndTransaction()
+        {
+        }
 
         /// <summary>Opens or creates SQLite database with the specified path</summary>
         /// <param name="path">Path to SQLite database</param>
@@ -647,49 +656,51 @@ namespace APSIM.Shared.Utilities
         /// <summary>Bind all parameters values to the specified query and execute the query.</summary>
         /// <param name="query">The query.</param>
         /// <param name="values">The values.</param>
-        public void BindParametersAndRunQuery(IntPtr query, object[] values)
+        public void BindParametersAndRunQuery(IntPtr query, IEnumerable<object> values)
         {
-            for (int i = 0; i < values.Length; i++)
+            int i = 0;
+            foreach (var value in values)
             {
-                if (Convert.IsDBNull(values[i]) || values[i] == null)
+                if (Convert.IsDBNull(value) || value == null)
                 {
                     sqlite3_bind_null(query, i + 1);
                 }
                 // Enums have an underlying type of Int32, but we want to store
                 // their string representation, not their integer value
-                else if (values[i].GetType().IsEnum)
+                else if (value.GetType().IsEnum)
                 {
-                    sqlite3_bind_text(query, i + 1, values[i].ToString(), -1, new IntPtr(-1));
+                    sqlite3_bind_text(query, i + 1, value.ToString(), -1, new IntPtr(-1));
                 }
-                else if (values[i].GetType() == typeof(DateTime))
+                else if (value.GetType() == typeof(DateTime))
                 {
-                    DateTime d = (DateTime)values[i];
+                    DateTime d = (DateTime)value;
                     sqlite3_bind_text(query, i + 1, d.ToString("yyyy-MM-dd hh:mm:ss"), -1, new IntPtr(-1));
                 }
-                else if (values[i].GetType() == typeof(int))
+                else if (value.GetType() == typeof(int))
                 {
-                    int integer = (int)values[i];
+                    int integer = (int)value;
                     sqlite3_bind_int(query, i + 1, integer);
                 }
-                else if (values[i].GetType() == typeof(float))
+                else if (value.GetType() == typeof(float))
                 {
-                    float f = (float)values[i];
+                    float f = (float)value;
                     sqlite3_bind_double(query, i + 1, f);
                 }
-                else if (values[i].GetType() == typeof(double))
+                else if (value.GetType() == typeof(double))
                 {
-                    double d = (double)values[i];
+                    double d = (double)value;
                     sqlite3_bind_double(query, i + 1, d);
                 }
-                else if (values[i].GetType() == typeof(byte[]))
+                else if (value.GetType() == typeof(byte[]))
                 {
-                    byte[] bytes = values[i] as byte[];
+                    byte[] bytes = value as byte[];
                     IntPtr SQLITE_TRANSIENT = new IntPtr(-1);
                     sqlite3_bind_blob(query, i + 1, bytes, bytes.Length, SQLITE_TRANSIENT);
                 }
                 else
-                    sqlite3_bind_text(query, i + 1, values[i] as string, -1, new IntPtr(-1));
+                    sqlite3_bind_text(query, i + 1, value as string, -1, new IntPtr(-1));
 
+                i++;
             }
 
             if (sqlite3_step(query) != SQLITE_DONE)
@@ -822,26 +833,26 @@ namespace APSIM.Shared.Utilities
         /// <param name="tableName"></param>
         /// <param name="columnNames"></param>
         /// <returns></returns>
-        public string CreateInsertSQL(string tableName, List<string> columnNames)
+        public string CreateInsertSQL(string tableName, IEnumerable<string> columnNames)
         {
             StringBuilder sql = new StringBuilder();
             sql.Append("INSERT INTO ");
             sql.Append(tableName);
             sql.Append('(');
 
-            for (int i = 0; i < columnNames.Count; i++)
+            foreach (var columnName in columnNames)
             {
-                if (i > 0)
+                if (sql[sql.Length-1] == ']')
                     sql.Append(',');
                 sql.Append('[');
-                sql.Append(columnNames[i]);
+                sql.Append(columnName);
                 sql.Append(']');
             }
             sql.Append(") VALUES (");
 
-            for (int i = 0; i < columnNames.Count; i++)
+            foreach (var columnName in columnNames)
             {
-                if (i > 0)
+                if (sql[sql.Length - 1] == '?')
                     sql.Append(',');
                 sql.Append('?');
             }

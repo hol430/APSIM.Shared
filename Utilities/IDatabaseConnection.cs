@@ -40,6 +40,14 @@ namespace APSIM.Shared.Utilities
         System.Data.DataTable ExecuteQuery(string query);
 
         /// <summary>
+        /// Executes a query and return a single integer value to caller. Returns -1 if not found.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="columnNumber">The column number.</param>
+        /// <returns>The integer for the column (0-n) for the first row</returns>
+        int ExecuteQueryReturnInt(string query, int columnNumber = 0);
+
+        /// <summary>
         /// Executes a query that returns no results
         /// </summary>
         /// <param name="query"></param>
@@ -62,20 +70,22 @@ namespace APSIM.Shared.Utilities
         void DropColumns(string tableName, IEnumerable<string> colsToRemove);
 
         /// <summary>
+        /// Begin a transaction.
+        /// </summary>
+        void BeginTransaction();
+
+        /// <summary>
+        /// End a transaction.
+        /// </summary>
+        void EndTransaction();
+
+        /// <summary>
         /// Do and ALTER on the db table and add a column
         /// </summary>
         /// <param name="tableName">The table name</param>
         /// <param name="columnName">The column to add</param>
         /// <param name="columnType">The db column type</param>
         void AddColumn(string tableName, string columnName, string columnType);
-        
-        /// <summary>
-        /// Create an Insert statement
-        /// </summary>
-        /// <param name="tableName"></param>
-        /// <param name="columnNames"></param>
-        /// <returns></returns>
-        string CreateInsertSQL(string tableName, List<string> columnNames);
 
         /// <summary>
         /// 

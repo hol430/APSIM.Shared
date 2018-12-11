@@ -36,6 +36,16 @@ namespace APSIM.Shared.Utilities
         /// <summary>Property to return true if the database is readonly.</summary>
         public bool IsReadOnly { get; private set; }
 
+        /// <summary>Begin a transaction.</summary>
+        public void BeginTransaction()
+        {
+        }
+
+        /// <summary>End a transaction.</summary>
+        public void EndTransaction()
+        {
+        }
+
         /// <summary>Opens or creates Firebird database with the specified path</summary>
         /// <param name="path">Path to Firebird database</param>
         /// <param name="readOnly">if set to <c>true</c> [read only].</param>

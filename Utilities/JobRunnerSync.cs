@@ -7,6 +7,7 @@ namespace APSIM.Shared.Utilities
 {
     using System;
     using System.Threading;
+    using System.Threading.Tasks;
 
     /// <summary>A class for running jobs synchronously.</summary>
     public class JobRunnerSync : IJobRunner
@@ -17,41 +18,56 @@ namespace APSIM.Shared.Utilities
         /// <summary>Invoked when a job is completed.</summary>
         public event EventHandler<JobCompleteArgs> JobCompleted;
 
+        /// <summary>A token for cancelling running of jobs</summary>
+        private CancellationTokenSource cancelToken;
+
+        /// <summary>The background task.</summary>
+        private Task backgroundTask;
+
         /// <summary>Run the specified jobs</summary>
         /// <param name="jobs">An instance of a class that manages all jobs.</param>
         /// <param name="wait">Wait until all jobs finished before returning?</param>
         /// <param name="numberOfProcessors">The maximum number of cores to use.</param>
         public void Run(IJobManager jobs, bool wait = false, int numberOfProcessors = -1)
         {
+            cancelToken = new CancellationTokenSource();
+
+            // Run all jobs on background thread
+            backgroundTask = Task.Run(() => JobRunnerThread(jobs));
+
+            if (wait)
+                while (!backgroundTask.IsCompleted)
+                    Thread.Sleep(200);
+        }
+
+        /// <summary>Main DoWork method for the scheduler thread. NB this does NOT run on the UI thread.        /// </summary>
+        /// <param name="jobs">An instance of a class that manages all jobs.</param>
+        private void JobRunnerThread(IJobManager jobs)
+        {
             // No - get another job to run.
             IRunnable job = jobs.GetNextJobToRun();
 
-            CancellationTokenSource cancelToken = new CancellationTokenSource();
-
-            // Iterate through all jobs and run them.
-            while (job != null)
-            {
-                JobCompleteArgs jobCompleteArguments = new JobCompleteArgs();
-                jobCompleteArguments.job = job;
-                try
-                {
-                    job.Run(cancelToken);
-                }
-                catch (Exception err)
-                {
-                    jobCompleteArguments.exceptionThrowByJob = err;
-                }
-                if (JobCompleted != null)
-                    JobCompleted.Invoke(this, jobCompleteArguments);
-
-                job = jobs.GetNextJobToRun();
-            }
-
             Exception exceptionThrown = null;
-
             try
             {
-                jobs.Completed();
+                // Iterate through all jobs and run them.
+                while (job != null && !cancelToken.IsCancellationRequested)
+                {
+                    JobCompleteArgs jobCompleteArguments = new JobCompleteArgs();
+                    jobCompleteArguments.job = job;
+                    try
+                    {
+                        job.Run(cancelToken);
+                    }
+                    catch (Exception err)
+                    {
+                        jobCompleteArguments.exceptionThrowByJob = err;
+                    }
+                    if (JobCompleted != null)
+                        JobCompleted.Invoke(this, jobCompleteArguments);
+
+                    job = jobs.GetNextJobToRun();
+                }
             }
             catch (Exception err)
             {
@@ -65,6 +81,9 @@ namespace APSIM.Shared.Utilities
         /// <summary>Stop all jobs currently running</summary>
         public void Stop()
         {
+            cancelToken.Cancel();
+            while (!backgroundTask.IsCompleted)
+                Thread.Sleep(50);
         }
         
     }

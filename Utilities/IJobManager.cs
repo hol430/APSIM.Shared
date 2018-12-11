@@ -3,11 +3,7 @@
     /// <summary>A class for managing jobs that are to be run with the JobRunner.</summary>
     public interface IJobManager
     {
-        /// <summary>Return the index of next job to run or -1 if nothing to run.</summary>
-        /// <returns>Job to run or null if no more</returns>
+        /// <summary>Return the next job to run or null if nothing to run.</summary>
         IRunnable GetNextJobToRun();
-
-        /// <summary>Called by the job runner when all jobs completed</summary>
-        void Completed();
     }
 }
