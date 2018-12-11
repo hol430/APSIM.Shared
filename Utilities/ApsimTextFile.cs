@@ -88,6 +88,9 @@ namespace APSIM.Shared.Utilities
         /// <summary>Is the apsim file an excel spreadsheet</summary>
         public bool IsExcelFile = false;
 
+        /// <summary>This is used to hold the index of the row in <see cref="_excelData"/> for today's date.</summary>
+        private int excelIndex = 0;
+
         /// <summary>The _ first date</summary>
         private DateTime _FirstDate;
 
@@ -741,13 +744,28 @@ namespace APSIM.Shared.Utilities
             if (date < _FirstDate)
                 throw new Exception("Date " + date.ToString() + " doesn't exist in file: " + _FileName);
 
-            int NumRowsToSkip = (date - _FirstDate).Days;
-
-            inStreamReader.Seek(FirstLinePosition, SeekOrigin.Begin);
-            while (!inStreamReader.EndOfStream && NumRowsToSkip > 0)
+            if (IsExcelFile)
             {
-                inStreamReader.ReadLine();
-                NumRowsToSkip--;
+                // Iterate through the DataTable, using excelIndex as the counter.
+                // If we reach a row whose date is greater than or equal to the
+                // desired date, break out of the loop.
+                for (excelIndex = 0; excelIndex < _excelData.Rows.Count; excelIndex++)
+                {
+                    DateTime rowDate = GetDateFromValues(_excelData.Rows[excelIndex].ItemArray);
+                    if (rowDate >= date)
+                        break;
+                }
+            }
+            else
+            {
+                int NumRowsToSkip = (date - _FirstDate).Days;
+
+                inStreamReader.Seek(FirstLinePosition, SeekOrigin.Begin);
+                while (!inStreamReader.EndOfStream && NumRowsToSkip > 0)
+                {
+                    inStreamReader.ReadLine();
+                    NumRowsToSkip--;
+                }
             }
         }
 
@@ -759,11 +777,19 @@ namespace APSIM.Shared.Utilities
         public object[] GetNextLineOfData()
         {
             Words.Clear();
-
-            if (GetNextLine(inStreamReader, ref Words))
-                return ConvertWordsToObjects(Words, ColumnTypes);
+            if (IsExcelFile)
+            {
+                object[] values = _excelData.Rows[excelIndex].ItemArray;
+                excelIndex++;
+                return values;
+            }
             else
-                throw new Exception("End of file reached while reading file: " + _FileName);
+            {
+                if (GetNextLine(inStreamReader, ref Words))
+                    return ConvertWordsToObjects(Words, ColumnTypes);
+                else
+                    throw new Exception("End of file reached while reading file: " + _FileName);
+            }
         }
 
         /// <summary>Return the current file position</summary>

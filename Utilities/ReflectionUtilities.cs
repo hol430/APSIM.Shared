@@ -10,6 +10,7 @@ namespace APSIM.Shared.Utilities
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
     using System.Runtime.Serialization;
     using System.Runtime.Serialization.Formatters.Binary;
@@ -420,6 +421,8 @@ namespace APSIM.Shared.Utilities
                     return MathUtilities.StringsToDoubles(stringValues);
                 else if (type == typeof(string[]))
                     return stringValues;
+                else if (type == typeof(DateTime))
+                    return stringValues.Select(d => DateTime.Parse(d));
                 else
                     throw new Exception("Cannot convert '" + stringValue + "' into an object of type '" + type.ToString() + "'");
             }
