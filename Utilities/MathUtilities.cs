@@ -336,21 +336,21 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Sum an array of numbers starting at startIndex up to endIndex (inclusive)
         /// </summary>
-        public static double Sum(IEnumerable Values, int iStartIndex, int iEndIndex)
+        public static double Sum(IEnumerable values, int startIndex, int endIndex)
         {
             double result = 0.0;
-            if (iStartIndex > iEndIndex)
+            if (startIndex > endIndex)
                 throw new Exception("MathUtilities.Sum: Start index is greater than end index");
-            if (iStartIndex < 0 || iEndIndex >= (Values as Array).Length)
+            if (startIndex < 0 || endIndex >= (values as Array).Length)
                 throw new Exception("MathUtilities.Sum: End index or start index is out of range");
-            int iIndex = -1;
-            foreach (double Value in Values)
+            int index = -1;
+            foreach (double value in values)
             {
-                iIndex++;
-                if (iIndex >= iStartIndex && Value != MissingValue)
-                    result += Value;
-                if (iIndex == iEndIndex)
-                    break; ;
+                index++;
+                if (index >= startIndex && value != MissingValue)
+                    result += value;
+                if (index == endIndex)
+                    break;
             }
 
             return result;
