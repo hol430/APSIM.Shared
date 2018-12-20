@@ -332,6 +332,30 @@ namespace APSIM.Shared.Utilities
 
             return result;
         }
+
+        /// <summary>
+        /// Sum an array of numbers starting at startIndex up to endIndex (inclusive)
+        /// </summary>
+        public static double Sum(IEnumerable values, int startIndex, int endIndex)
+        {
+            double result = 0.0;
+            if (startIndex > endIndex)
+                throw new Exception("MathUtilities.Sum: Start index is greater than end index");
+            if (startIndex < 0 || endIndex >= (values as Array).Length)
+                throw new Exception("MathUtilities.Sum: End index or start index is out of range");
+            int index = -1;
+            foreach (double value in values)
+            {
+                index++;
+                if (index >= startIndex && value != MissingValue)
+                    result += value;
+                if (index == endIndex)
+                    break;
+            }
+
+            return result;
+        }
+
         /// <summary>
         ///Linearly interpolates a value y for a given value x and a given
         ///set of xy co-ordinates.
