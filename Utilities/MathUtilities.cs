@@ -1545,6 +1545,35 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>
+        /// Returns monthly totals for the given variable.
+        /// </summary>
+        /// <param name="table">The data table containing the data.</param>
+        /// <param name="fieldName">The field name to look at.</param>
+        /// <param name="firstDate">Only data after this date will be used.</param>
+        /// <param name="lastDate">Only data before this date will be used.</param>
+        /// <returns>Array of tuples. Each tuple contains a date (month) and the total of the field's values for that month.</returns>
+        public static Tuple<DateTime, double>[] MonthlyTotals(DataTable table, string fieldName, DateTime firstDate, DateTime lastDate)
+        {
+            if (table.Rows.Count < 1)
+                return null;
+            var result = from row in table.AsEnumerable()
+                                      where (DataTableUtilities.GetDateFromRow(row) >= firstDate &&
+                                             DataTableUtilities.GetDateFromRow(row) <= lastDate)
+                                      group row by new
+                                      {
+                                          Year = DataTableUtilities.GetDateFromRow(row).Year,
+                                          Month = DataTableUtilities.GetDateFromRow(row).Month,
+                                      } into grp
+                                      select new
+                                      {
+                                          Year = grp.Key.Year,
+                                          Month = grp.Key.Month,
+                                          Total = grp.Sum(row => row.Field<float>(fieldName))
+                                      };
+            return result.Select(r => new Tuple<DateTime, double>(new DateTime(r.Year, r.Month, 1), r.Total)).ToArray();
+        }
+
+        /// <summary>
         /// Return longterm average monthly totals for the given variable. 
         /// </summary>
         /// <remarks>
@@ -1575,9 +1604,6 @@ namespace APSIM.Shared.Utilities
                                  Year = grp.Key.Year,
                                  Month = grp.Key.Month,
                                  Total = grp.Sum(row => row.Field<float>(fieldName))
-
-
-
                              };
 
                 // This second query gives average monthly totals using the first query.
