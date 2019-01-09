@@ -261,8 +261,8 @@ namespace APSIM.Shared.Utilities
             {
                 foreach (object Value in Values)
                 {
-                    if (Value != null && !double.IsNaN((double)Value))
-                        result += (double)Value;
+                    if (Value != null && !double.IsNaN(Convert.ToDouble(Value)))
+                        result += Convert.ToDouble(Value);
                 }
             }
             return result;
@@ -277,9 +277,9 @@ namespace APSIM.Shared.Utilities
             int Count = 0;
             foreach (object Value in Values)
             {
-                if (Value != null && !double.IsNaN((double)Value))
+                if (Value != null && !double.IsNaN(Convert.ToDouble(Value)))
                 {
-                    Sum += (double) Value;
+                    Sum += Convert.ToDouble(Value);
                     Count++;
                 }
             }
