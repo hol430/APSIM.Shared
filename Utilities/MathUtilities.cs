@@ -261,8 +261,8 @@ namespace APSIM.Shared.Utilities
             {
                 foreach (object Value in Values)
                 {
-                    if (Value != null && !double.IsNaN((double)Value))
-                        result += (double)Value;
+                    if (Value != null && !double.IsNaN(Convert.ToDouble(Value)))
+                        result += Convert.ToDouble(Value);
                 }
             }
             return result;
@@ -277,9 +277,9 @@ namespace APSIM.Shared.Utilities
             int Count = 0;
             foreach (object Value in Values)
             {
-                if (Value != null && !double.IsNaN((double)Value))
+                if (Value != null && !double.IsNaN(Convert.ToDouble(Value)))
                 {
-                    Sum += (double) Value;
+                    Sum += Convert.ToDouble(Value);
                     Count++;
                 }
             }
@@ -332,6 +332,30 @@ namespace APSIM.Shared.Utilities
 
             return result;
         }
+
+        /// <summary>
+        /// Sum an array of numbers starting at startIndex up to endIndex (inclusive)
+        /// </summary>
+        public static double Sum(IEnumerable values, int startIndex, int endIndex)
+        {
+            double result = 0.0;
+            if (startIndex > endIndex)
+                throw new Exception("MathUtilities.Sum: Start index is greater than end index");
+            if (startIndex < 0 || endIndex >= (values as Array).Length)
+                throw new Exception("MathUtilities.Sum: End index or start index is out of range");
+            int index = -1;
+            foreach (double value in values)
+            {
+                index++;
+                if (index >= startIndex && value != MissingValue)
+                    result += value;
+                if (index == endIndex)
+                    break;
+            }
+
+            return result;
+        }
+
         /// <summary>
         ///Linearly interpolates a value y for a given value x and a given
         ///set of xy co-ordinates.
@@ -1521,6 +1545,35 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>
+        /// Returns monthly totals for the given variable.
+        /// </summary>
+        /// <param name="table">The data table containing the data.</param>
+        /// <param name="fieldName">The field name to look at.</param>
+        /// <param name="firstDate">Only data after this date will be used.</param>
+        /// <param name="lastDate">Only data before this date will be used.</param>
+        /// <returns>Array of tuples. Each tuple contains a date (month) and the total of the field's values for that month.</returns>
+        public static Tuple<DateTime, double>[] MonthlyTotals(DataTable table, string fieldName, DateTime firstDate, DateTime lastDate)
+        {
+            if (table.Rows.Count < 1)
+                return null;
+            var result = from row in table.AsEnumerable()
+                                      where (DataTableUtilities.GetDateFromRow(row) >= firstDate &&
+                                             DataTableUtilities.GetDateFromRow(row) <= lastDate)
+                                      group row by new
+                                      {
+                                          Year = DataTableUtilities.GetDateFromRow(row).Year,
+                                          Month = DataTableUtilities.GetDateFromRow(row).Month,
+                                      } into grp
+                                      select new
+                                      {
+                                          Year = grp.Key.Year,
+                                          Month = grp.Key.Month,
+                                          Total = grp.Sum(row => row.Field<float>(fieldName))
+                                      };
+            return result.Select(r => new Tuple<DateTime, double>(new DateTime(r.Year, r.Month, 1), r.Total)).ToArray();
+        }
+
+        /// <summary>
         /// Return longterm average monthly totals for the given variable. 
         /// </summary>
         /// <remarks>
@@ -1551,9 +1604,6 @@ namespace APSIM.Shared.Utilities
                                  Year = grp.Key.Year,
                                  Month = grp.Key.Month,
                                  Total = grp.Sum(row => row.Field<float>(fieldName))
-
-
-
                              };
 
                 // This second query gives average monthly totals using the first query.
