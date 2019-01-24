@@ -392,11 +392,13 @@ namespace APSIM.Shared.Utilities
         /// <summary>Begin a transaction.</summary>
         public void BeginTransaction()
         {
+            ExecuteNonQuery("BEGIN");
         }
 
         /// <summary>End a transaction.</summary>
         public void EndTransaction()
         {
+            ExecuteNonQuery("END");
         }
 
         /// <summary>Opens or creates SQLite database with the specified path</summary>
