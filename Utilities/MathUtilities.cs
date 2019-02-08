@@ -1644,9 +1644,7 @@ namespace APSIM.Shared.Utilities
 
                 List<double> totals = new List<double>();
                 foreach (var row in result2)
-                {
                     totals.Add(row.Avg);
-                }
 
                 return totals.ToArray();
             }

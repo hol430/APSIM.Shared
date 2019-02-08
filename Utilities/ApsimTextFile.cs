@@ -203,7 +203,14 @@ namespace APSIM.Shared.Utilities
 
                 // Get first date.
                 object[] values = ConvertWordsToObjects(Words, ColumnTypes);
-                _FirstDate = GetDateFromValues(values);
+                try
+                {
+                    _FirstDate = GetDateFromValues(values);
+                }
+                catch (Exception err)
+                {
+                    throw new Exception("Unable to parse first date in file " + _FileName + ": " + err.Message);
+                }
 
                 // Now we need to seek to the end of file and find the last full line in the file.
                 inStreamReader.Seek(0, SeekOrigin.End);
@@ -342,7 +349,15 @@ namespace APSIM.Shared.Utilities
                     }
 
                     DataRow newMetRow = data.NewRow();
-                    object[] values = ConvertWordsToObjects(words, ColumnTypes);
+                    object[] values = null;
+                    try
+                    {
+                        values = ConvertWordsToObjects(words, ColumnTypes);
+                    }
+                    catch (Exception err)
+                    {
+                        throw new Exception("Error while parsing file " + _FileName + ": " + err.Message);
+                    }
                     for (int w = 0; w != words.Count; w++)
                     {
                         int TableColumnNumber = newMetRow.Table.Columns.IndexOf(Headings[w]);
@@ -659,19 +674,26 @@ namespace APSIM.Shared.Utilities
             for (int Col = 0; Col != values.Length; Col++)
             {
                 string ColumnName = Headings[Col];
-                if (ColumnName.Equals("date", StringComparison.CurrentCultureIgnoreCase))
+                try
                 {
-                    if (ColumnTypes[Col] == typeof(DateTime))
-                        return (DateTime)values[Col];
-                    else
-                        return DateTime.Parse(values[Col].ToString());
+                    if (ColumnName.Equals("date", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        if (ColumnTypes[Col] == typeof(DateTime))
+                            return (DateTime)values[Col];
+                        else
+                            return DateTime.Parse(values[Col].ToString());
+                    }
+                    else if (ColumnName.Equals("year", StringComparison.CurrentCultureIgnoreCase))
+                        Year = Convert.ToInt32(values[Col]);
+                    else if (ColumnName.Equals("month", StringComparison.CurrentCultureIgnoreCase))
+                        Month = Convert.ToInt32(values[Col]);
+                    else if (ColumnName.Equals("day", StringComparison.CurrentCultureIgnoreCase))
+                        Day = Convert.ToInt32(values[Col]);
                 }
-                else if (ColumnName.Equals("year", StringComparison.CurrentCultureIgnoreCase))
-                    Year = Convert.ToInt32(values[Col]);
-                else if (ColumnName.Equals("month", StringComparison.CurrentCultureIgnoreCase))
-                    Month = Convert.ToInt32(values[Col]);
-                else if (ColumnName.Equals("day", StringComparison.CurrentCultureIgnoreCase))
-                    Day = Convert.ToInt32(values[Col]);
+                catch (Exception err)
+                {
+                    throw new Exception("Unable to parse " + ColumnName + " from '" + values[Col] + "': " + err.Message);
+                }
             }
 
             if (Year > 0)
