@@ -21,7 +21,8 @@
         /// <param name="cancelToken">Is cancellation pending?</param>
         public void Run(CancellationTokenSource cancelToken)
         {
-            Thread.Sleep(durationOfSleep);
+            if (!cancelToken.IsCancellationRequested)
+                Thread.Sleep(durationOfSleep);
         }
     }
 }

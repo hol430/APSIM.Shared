@@ -24,6 +24,9 @@ namespace APSIM.Shared.Utilities
         /// <summary>The background task.</summary>
         private Task backgroundTask;
 
+        /// <summary>Have all jobs been completed?</summary>
+        private bool allJobsFinished;
+
         /// <summary>Run the specified jobs</summary>
         /// <param name="jobs">An instance of a class that manages all jobs.</param>
         /// <param name="wait">Wait until all jobs finished before returning?</param>
@@ -31,6 +34,7 @@ namespace APSIM.Shared.Utilities
         public void Run(IJobManager jobs, bool wait = false, int numberOfProcessors = -1)
         {
             cancelToken = new CancellationTokenSource();
+            allJobsFinished = false;
 
             // Run all jobs on background thread
             backgroundTask = Task.Run(() => JobRunnerThread(jobs));
@@ -74,16 +78,19 @@ namespace APSIM.Shared.Utilities
                 exceptionThrown = err;
             }
 
-            if (AllJobsCompleted != null)
-                AllJobsCompleted.Invoke(this, new AllCompletedArgs() { exceptionThrown = exceptionThrown });
+            allJobsFinished = true;
+            AllJobsCompleted?.Invoke(this, new AllCompletedArgs() { exceptionThrown = exceptionThrown });
         }
 
         /// <summary>Stop all jobs currently running</summary>
         public void Stop()
         {
-            cancelToken.Cancel();
-            while (!backgroundTask.IsCompleted)
-                Thread.Sleep(50);
+            if (!allJobsFinished)
+            {
+                cancelToken.Cancel();
+                while (!allJobsFinished)
+                    Thread.Sleep(200);
+            }
         }
         
     }
