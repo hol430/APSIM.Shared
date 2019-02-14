@@ -1545,6 +1545,29 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>
+        /// Utility method which sums a specific field in a collection of data rows.
+        /// </summary>
+        /// <param name="rows">Rows to be summed.</param>
+        /// <param name="fieldName">Name of the field to be summed.</param>
+        /// <returns></returns>
+        private static double SumOfRows(DataRow[] rows, string fieldName)
+        {
+            double total = 0;
+            foreach (DataRow row in rows)
+            {
+                double field;
+                if (double.TryParse(row.Field<object>(fieldName)?.ToString(), out field))
+                    total += field;
+                else
+                {
+                    DateTime date = DataTableUtilities.GetDateFromRow(row);
+                    throw new Exception("Invalid data in column " + fieldName + " on date " + date.ToShortDateString() + " (day of year = " + date.DayOfYear + ")");
+                }
+            }
+            return total;
+        }
+
+        /// <summary>
         /// Returns monthly totals for the given variable.
         /// </summary>
         /// <param name="table">The data table containing the data.</param>
@@ -1568,7 +1591,7 @@ namespace APSIM.Shared.Utilities
                                       {
                                           Year = grp.Key.Year,
                                           Month = grp.Key.Month,
-                                          Total = grp.Sum(row => row.Field<float>(fieldName))
+                                          Total = SumOfRows(grp.AsEnumerable().ToArray(), fieldName)
                                       };
             return result.Select(r => new Tuple<DateTime, double>(new DateTime(r.Year, r.Month, 1), r.Total)).ToArray();
         }
@@ -1603,7 +1626,7 @@ namespace APSIM.Shared.Utilities
                              {
                                  Year = grp.Key.Year,
                                  Month = grp.Key.Month,
-                                 Total = grp.Sum(row => row.Field<float>(fieldName))
+                                 Total = SumOfRows(grp.AsEnumerable().ToArray(), fieldName)
                              };
 
                 // This second query gives average monthly totals using the first query.
@@ -1621,9 +1644,7 @@ namespace APSIM.Shared.Utilities
 
                 List<double> totals = new List<double>();
                 foreach (var row in result2)
-                {
                     totals.Add(row.Avg);
-                }
 
                 return totals.ToArray();
             }
@@ -1657,7 +1678,7 @@ namespace APSIM.Shared.Utilities
                              select new
                              {
                                  Year = grp.Key.Year,
-                                 Total = grp.Sum(row => row.Field<float>(fieldName))
+                                 Total = SumOfRows(grp.AsEnumerable().ToArray(), fieldName)
                              };
 
                 List<double> totals = new List<double>();
@@ -1697,9 +1718,8 @@ namespace APSIM.Shared.Utilities
                              select new
                              {
                                  Year = grp.Key.Year,
-                                 Total = grp.Average(row => row.Field<float>(fieldName))
+                                 Total = Divide(SumOfRows(grp.AsEnumerable().ToArray(), fieldName), grp.AsEnumerable().Count(), 0)
                              };
-
                 List<double> totals = new List<double>();
                 foreach (var row in result)
                     totals.Add(row.Total);
