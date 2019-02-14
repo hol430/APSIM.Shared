@@ -615,7 +615,7 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Write the specified DataTable to a CSV string, excluding the specified column names.
         /// </summary>
-        static public void DataTableToText(DataTable data, int startColumnIndex, string delimiter, bool showHeadings, TextWriter writer, bool excelFriendly = false)
+        static public void DataTableToText(DataTable data, int startColumnIndex, string delimiter, bool showHeadings, TextWriter writer, bool excelFriendly = false, string decimalFormatString="F3")
         {
             // Convert the data table to a table of strings. This will make it easier for
             // calculating widths.
@@ -626,7 +626,7 @@ namespace APSIM.Shared.Utilities
             {
                 DataRow newRow = stringTable.NewRow();
                 foreach (DataColumn column in data.Columns)
-                    newRow[column.Ordinal] = ConvertObjectToString(row[column]);
+                    newRow[column.Ordinal] = ConvertObjectToString(row[column], decimalFormatString);
                 stringTable.Rows.Add(newRow);
             }
 
@@ -679,7 +679,7 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Convert the specified object to a string.
         /// </summary>
-        private static string ConvertObjectToString(object obj)
+        private static string ConvertObjectToString(object obj, string decimalFormatString)
         {
             if (obj is DateTime)
             {
@@ -687,7 +687,7 @@ namespace APSIM.Shared.Utilities
                 return D.ToString("yyyy-MM-dd");
             }
             else if (obj is float || obj is double)
-                return string.Format("{0:F3}", obj);
+                return string.Format("{0:" + decimalFormatString + "}", obj);
             else
                 return obj.ToString();
         }
