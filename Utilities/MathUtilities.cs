@@ -254,17 +254,13 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// Sum an array of doubles 
         /// </summary>
-        public static double Sum(IEnumerable Values)
+        public static double Sum(IEnumerable<double> values)
         {
             double result = 0.0;
-            if (Values != null)
-            {
-                foreach (object Value in Values)
-                {
-                    if (Value != null && !double.IsNaN(Convert.ToDouble(Value)))
-                        result += Convert.ToDouble(Value);
-                }
-            }
+            if (values != null)
+                foreach (var value in values)
+                    if (!double.IsNaN(value))
+                        result += value;
             return result;
         }
 
