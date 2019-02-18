@@ -265,6 +265,19 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>
+        /// Sum an array of doubles 
+        /// </summary>
+        public static double Sum(IEnumerable<int> values)
+        {
+            int result = 0;
+            if (values != null)
+                foreach (var value in values)
+                    if (!double.IsNaN(value))
+                        result += value;
+            return result;
+        }
+
+        /// <summary>
         /// Average an array of doubles 
         /// </summary>
         public static double Average(IEnumerable Values)
