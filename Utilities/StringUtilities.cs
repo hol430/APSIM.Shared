@@ -485,7 +485,7 @@ namespace APSIM.Shared.Utilities
         /// A helper function for building a string from an array of values.
         /// Format specifies the level of precision written e.g. "f2"
         /// </summary>
-        public static string BuildString(double[] values, string format)
+        public static string BuildString(IEnumerable<double> values, string format)
         {
             string ReturnString = "";
             foreach (double Value in values)
@@ -497,18 +497,18 @@ namespace APSIM.Shared.Utilities
         /// A helper function for building a string from an array of strings.
         /// Separator is inserted between each string.
         /// </summary>
-        public static string BuildString(string[] values, string separator)
+        public static string BuildString<T>(IEnumerable<T> values, string separator)
         {
             if (values == null)
                 return "";
-            string ReturnString = "";
-            for (int i = 0; i < values.Length; i++)
+            string returnString = string.Empty;
+            foreach (var value in values)
             {
-                if (i > 0)
-                    ReturnString += separator;
-                ReturnString += values[i];
+                if (returnString != string.Empty)
+                    returnString += separator;
+                returnString += value;
             }
-            return ReturnString;
+            return returnString;
         }
 
         /// <summary>

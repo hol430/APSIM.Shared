@@ -213,6 +213,21 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>
+        /// Get a column as integers
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="columnName"></param>
+        /// <returns></returns>
+        static public int[] GetColumnAsIntegers(DataTable table, string columnName)
+        {
+            int[] values = new int[table.Rows.Count];
+            for (int Row = 0; Row != table.Rows.Count; Row++)
+                values[Row] = Convert.ToInt32(table.Rows[Row][columnName], CultureInfo.InvariantCulture);
+            
+            return values;
+        }
+
+        /// <summary>
         /// Get a column as doubles
         /// </summary>
         /// <param name="table"></param>

@@ -910,6 +910,12 @@ namespace APSIM.Shared.Utilities
             else
                 type = value.GetType();
 
+            return GetDBDataTypeName(type);
+        }
+
+        /// <summary>Convert .NET type into an SQLite type</summary>
+        public string GetDBDataTypeName(Type type)
+        {
             if (type == null)
                 return "integer";
             else if (type.ToString() == "System.DateTime")

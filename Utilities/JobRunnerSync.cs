@@ -72,6 +72,8 @@ namespace APSIM.Shared.Utilities
 
                     job = jobs.GetNextJobToRun();
                 }
+
+                jobs.Completed();
             }
             catch (Exception err)
             {

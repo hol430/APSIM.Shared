@@ -558,16 +558,23 @@ namespace APSIM.Shared.Utilities
 
         private object lockThis = new object();
 
-        /// <summary>Convert .NET type into an Firebird type</summary>
+
+        /// <summary>Convert .NET type into an SQLite type</summary>
         public string GetDBDataTypeName(object value)
         {
-            // Convert the value we found above into an Firebird data type string and return it.
+            // Convert the value we found above into an SQLite data type string and return it.
             Type type = null;
             if (value == null)
                 return null;
             else
                 type = value.GetType();
 
+            return GetDBDataTypeName(type);
+        }
+
+        /// <summary>Convert .NET type into an Firebird type</summary>
+        public string GetDBDataTypeName(Type type)
+        {
             if (type == null)
                 return "INTEGER";
             else if (type.ToString() == "System.DateTime")

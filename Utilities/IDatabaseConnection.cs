@@ -96,8 +96,11 @@ namespace APSIM.Shared.Utilities
         /// <returns></returns>
         int InsertRows(string tableName, List<string> columnNames, List<object[]> values);
 
-        /// <summary>Convert .NET type into an SQLite type</summary>
+        /// <summary>Convert .NET value into an SQLite type</summary>
         string GetDBDataTypeName(object value);
+
+        /// <summary>Convert .NET type into an SQLite type</summary>
+        string GetDBDataTypeName(Type type);
 
         /// <summary>
         /// 

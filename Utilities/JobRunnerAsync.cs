@@ -112,6 +112,7 @@ namespace APSIM.Shared.Utilities
                 // All jobs now completed
                 while (numberTasksRunning > 0)
                     Thread.Sleep(200);
+                jobs.Completed();
             }
             catch (Exception err)
             { 
