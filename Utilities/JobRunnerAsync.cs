@@ -104,8 +104,13 @@ namespace APSIM.Shared.Utilities
                             if (JobCompleted != null)
                                 JobCompleted.Invoke(this, jobCompleteArguments);
 
-                            lock (this)
-                                numberTasksRunning--;
+                            // If a computationally intensive job has completed then reduce
+                            // the count of such jobs.
+                            if (typeof(IComputationalyTimeConsuming).IsAssignableFrom(job.GetType()))
+                            {
+                                lock (this)
+                                    numberTasksRunning--;
+                            }
                         });
                     }
                 }
