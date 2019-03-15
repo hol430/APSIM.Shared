@@ -389,6 +389,9 @@ namespace APSIM.Shared.Utilities
         /// <summary>Property to return true if the database is readonly.</summary>
         public bool IsReadOnly { get; private set; }
 
+        /// <summary>Return true if the database is in-memory</summary>
+        public bool IsInMemory { get; private set; } = false;
+
         /// <summary>Begin a transaction.</summary>
         public void BeginTransaction()
         {
@@ -421,6 +424,7 @@ namespace APSIM.Shared.Utilities
 
             _open = true;
             IsReadOnly = readOnly;
+            IsInMemory = path.ToLower().Contains(":memory:");
             sqlite3_busy_timeout(_db, 40000);
         }
 
@@ -804,7 +808,7 @@ namespace APSIM.Shared.Utilities
             }
             if (updatedTableColumns.Count > 0)
             {
-                ExecuteNonQuery("BEGIN");
+                BeginTransaction();
 
                 // Rename old table
                 ExecuteNonQuery("ALTER TABLE [" + tableName + "] RENAME TO [" + tableName + "_old]");
@@ -815,7 +819,7 @@ namespace APSIM.Shared.Utilities
                 // Drop old table
                 ExecuteNonQuery("DROP TABLE [" + tableName + "_old]");
 
-                ExecuteNonQuery("END");
+                EndTransaction();
             }
         }
 
