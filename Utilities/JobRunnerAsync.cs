@@ -15,9 +15,6 @@ namespace APSIM.Shared.Utilities
         /// <summary>A token for cancelling running of jobs</summary>
         private CancellationTokenSource cancelToken;
 
-        /// <summary>Number of tasks currently running</summary>
-        private int numberTasksRunning;
-
         /// <summary>Occurs when all jobs completed.</summary>
         public event EventHandler<AllCompletedArgs> AllJobsCompleted;
 
@@ -63,7 +60,7 @@ namespace APSIM.Shared.Utilities
             Exception exceptionThrown = null;
             try
             {
-                numberTasksRunning = 0;
+                int numberTasksRunning = 0;
 
                 // Main worker thread for keeping jobs running
                 while (!cancelToken.IsCancellationRequested)
@@ -80,13 +77,8 @@ namespace APSIM.Shared.Utilities
                         if (job == null)
                             break;
 
-                        // If the job is computationally intensive and will potentially take some time 
-                        // to run, then we want to keep track of how many of these are running.
-                        if (typeof(IComputationalyTimeConsuming).IsAssignableFrom(job.GetType()))
-                        {
-                            lock (this)
-                                numberTasksRunning++;
-                        }
+                        lock (this)
+                            numberTasksRunning++;
 
                         // Run the job.
                         Task.Run(() =>
@@ -104,13 +96,8 @@ namespace APSIM.Shared.Utilities
                             if (JobCompleted != null)
                                 JobCompleted.Invoke(this, jobCompleteArguments);
 
-                            // If a computationally intensive job has completed then reduce
-                            // the count of such jobs.
-                            if (typeof(IComputationalyTimeConsuming).IsAssignableFrom(job.GetType()))
-                            {
-                                lock (this)
-                                    numberTasksRunning--;
-                            }
+                            lock (this)
+                                numberTasksRunning--;
                         });
                     }
                 }
