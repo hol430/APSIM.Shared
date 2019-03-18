@@ -1739,12 +1739,11 @@ namespace APSIM.Shared.Utilities
             return null;
         }
 
-
         /// <summary>
-        /// Calculate the std deviation
+        /// Calculate the population standard deviation.
         /// </summary>
-        /// <param name="values"></param>
-        /// <returns>Std deviation</returns>
+        /// <param name="values">List of values.</param>
+        /// <returns>Population standard deviation.</returns>
         public static double StandardDeviation(IEnumerable<double> values)
         {
             double sumOfDerivation = 0;
@@ -1758,6 +1757,24 @@ namespace APSIM.Shared.Utilities
             double mean = Sum(values) / count;
             double sumOfDerivationAverage = sumOfDerivation / count;
             return System.Math.Sqrt(sumOfDerivationAverage - (mean * mean));
+        }
+
+        /// <summary>
+        /// Calculate the sample standard deviation.
+        /// </summary>
+        /// <param name="values">List of values.</param>
+        /// <returns>Sample standard deviation.</returns>
+        public static double SampleStandardDeviation(IEnumerable<double> values)
+        {
+            double mean = values.Sum() / values.Count();
+            double sigma = 0;
+            foreach (double value in values)
+                sigma += Math.Pow(value - mean, 2);
+
+            // In case of division by zero (only 1 element in list), return 0.
+            sigma = Divide(sigma, values.Count() - 1, 0);
+            sigma = Math.Sqrt(sigma);
+            return sigma;
         }
 
         /// <summary>Cumulates the specified values.</summary>
