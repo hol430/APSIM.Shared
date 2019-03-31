@@ -346,6 +346,7 @@ namespace APSIM.Shared.Utilities
                         Params.ReferencedAssemblies.Add("System.Windows.Forms.dll");
                         Params.ReferencedAssemblies.Add("System.Data.dll");
                         Params.ReferencedAssemblies.Add("System.Core.dll");
+                        Params.ReferencedAssemblies.Add("MathNet.Numerics.dll");
                         //Params.ReferencedAssemblies.Add("APSIM.Shared.dll");
                         Params.ReferencedAssemblies.Add(System.IO.Path.Combine(Assembly.GetExecutingAssembly().Location));
 
