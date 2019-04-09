@@ -404,6 +404,28 @@ namespace APSIM.Shared.Utilities
             return columnNames;
         }
 
+        /// <summary>Return a list of column names with a data type of string.</summary>
+        /// <param name="tableName">Name of the table.</param>
+        /// <returns></returns>
+        public List<string> GetStringColumnNames(string tableName)
+        {
+            List<string> columnNames = new List<string>();
+
+            if (IsOpen)
+            {
+                string sql = "select rdb$field_name from rdb$relation_fields ";
+                sql += "where rdb$relation_name = '" + tableName + "' ";
+                sql += "order by rdb$field_position; ";
+
+                DataTable dt = ExecuteQuery(sql);
+                foreach (DataRow dr in dt.Rows)
+                {
+                    columnNames.Add(((string)dr[0]).Trim());
+                }
+            }
+            return columnNames;
+        }
+
         /// <summary>Return a list of column names for the specified table</summary>
         /// <param name="tableName">The table name to get columns from.</param>
         public List<string> GetTableColumns(string tableName)

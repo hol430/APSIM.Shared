@@ -58,6 +58,11 @@ namespace APSIM.Shared.Utilities
         /// <returns>A list of column names in column order (uppercase)</returns>
         List<string> GetColumnNames(string tableName);
 
+        /// <summary>Return a list of column names with a data type of string.</summary>
+        /// <param name="tableName">Name of the table.</param>
+        /// <returns></returns>
+        List<string> GetStringColumnNames(string tableName);
+
         /// <summary>Return a list of column names for the specified table</summary>
         /// <param name="tableName">The table name to get columns from.</param>
         List<string> GetTableColumns(string tableName);

@@ -743,6 +743,23 @@ namespace APSIM.Shared.Utilities
             return columnNames;
         }
 
+        /// <summary>Return a list of column names with a data type of string.</summary>
+        /// <param name="tableName">Name of the table.</param>
+        /// <returns></returns>
+        public List<string> GetStringColumnNames(string tableName)
+        {
+            List<string> columns = new List<string>();
+            DataTable columnData = ExecuteQuery("pragma table_info('" + tableName + "')");
+
+            foreach (DataRow row in columnData.Rows)
+            {
+                if (row["type"].ToString() == "char(50)")
+                    columns.Add(row["name"].ToString());
+            }
+
+            return columns;
+        }
+
         /// <summary>Lock the mutex</summary>
         public void MutexEnter()
         {
