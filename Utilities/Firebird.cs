@@ -13,6 +13,19 @@ namespace APSIM.Shared.Utilities
     using FirebirdSql.Data.FirebirdClient;
     using System.IO;
 
+    /// <summary>A class representing an exception thrown by this library.</summary>
+    [Serializable]
+    public class FirebirdException : Exception
+    {
+        /// <summary>Initializes a new instance of the <see cref="FirebirdException"/> class.</summary>
+        /// <param name="message">The message that describes the error.</param>
+        public FirebirdException(string message) :
+            base(message)
+        {
+
+        }
+    }
+
     /// <summary>
     /// A wrapper for a Firebird database connection
     /// </summary>
@@ -35,6 +48,9 @@ namespace APSIM.Shared.Utilities
 
         /// <summary>Property to return true if the database is readonly.</summary>
         public bool IsReadOnly { get; private set; }
+
+        // Dictionary to allow the column number for a "long" column name to be accessed quickly
+        private Dictionary<string, ColumnNameMap> colInfoMap = new Dictionary<string, ColumnNameMap>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>Begin a transaction.</summary>
         public void BeginTransaction()
@@ -61,6 +77,7 @@ namespace APSIM.Shared.Utilities
                     // create a new database
                     FbConnection.CreateDatabase(GetConnectionString(path, "localhost", "SYSDBA", "masterkey"), true);
                     // TODO: may need to create tables here
+
                 }
             }
             OpenSQLConnection(path, "localhost", "SYSDBA", "masterkey");
@@ -131,6 +148,26 @@ namespace APSIM.Shared.Utilities
                     fbDBConnection.ConnectionString = GetConnectionString(dbpath, source, user, pass);
                     fbDBConnection.Open();
                 }
+                if (TableExists("_ColumnInfo"))
+                {
+                    DataTable colInfoTable = ExecuteQuery("SELECT \"TableName\", \"ColumnName\", \"ColumnNumber\" FROM \"_ColumnInfo\" ORDER BY \"TableName\", \"ColumnNumber\"");
+                    string currentTable = string.Empty;
+                    ColumnNameMap currentMap = null;
+                    foreach (DataRow row in colInfoTable.Rows)
+                    {
+                        string tableName = ((string)row[0]).Trim();
+                        string columnName = ((string)row[1]).Trim();
+                        int columnNumber = Convert.ToInt32(row[2]);
+                        if (tableName != currentTable)
+                        {
+                            currentTable = tableName;
+                            currentMap = new ColumnNameMap();
+                            colInfoMap.Add(tableName, currentMap);
+                        }
+                        currentMap.ColDict.Add(columnName, columnNumber);
+                        currentMap.LongNames.Insert(columnNumber, columnName);
+                    }
+                }
                 return true;
             }
             catch (Exception ex)
@@ -149,27 +186,33 @@ namespace APSIM.Shared.Utilities
             }
             if (IsOpen)
             {
-                //FbTransaction transaction = fbDBConnection.BeginTransaction();
+                var transactionOptions = new FbTransactionOptions()
+                {
+                    TransactionBehavior = FbTransactionBehavior.Concurrency |
+                                          FbTransactionBehavior.Wait |
+                                          FbTransactionBehavior.NoAutoUndo
+                };
+                FbTransaction transaction = fbDBConnection.BeginTransaction(transactionOptions);
                 query = AdjustQuotedFields(query);
-                FbCommand myCmd = new FbCommand(query, fbDBConnection);
+                FbCommand myCmd = new FbCommand(query, fbDBConnection, transaction);
                 myCmd.CommandType = CommandType.Text;
 
                 try
                 {
                     myCmd.ExecuteNonQuery();
-                    //transaction.Commit();
+                    transaction.Commit();
                 }
                 catch (Exception ex)
                 {
-                    //transaction.Dispose();
-                    this.CloseDatabase();
+                    transaction.Dispose();
+                    // this.CloseDatabase();
                     throw new FirebirdException("Cannot execute the SQL statement\r\n " + query + "\r\n" + ex.Message);
                 }
                 finally
                 {
                     if (myCmd != null)
                     {
-                        //transaction.Dispose();
+                        // transaction.Dispose();
                         myCmd.Dispose();
                         myCmd = null;
                     }
@@ -179,84 +222,42 @@ namespace APSIM.Shared.Utilities
                 throw new FirebirdException("Firebird database is not open.");
         }
 
-        /// <summary>
-        /// Column class
-        /// </summary>
-        private class Column
+        /// <summary>Executes a query that returns a single value</summary>
+        /// <param name="query">SQL query to execute</param>
+        public object ExecuteScalar(string query)
         {
-            ////public string name;
-            public Type dataType;
-            public List<object> values = new List<object>();
+            object result = null;
+            if (!IsOpen)
+            {
+                fbDBConnection.Open();
+            }
+            if (IsOpen)
+            {
+                //FbTransaction transaction = fbDBConnection.BeginTransaction();
+                query = AdjustQuotedFields(query);
+                FbCommand myCmd = new FbCommand(query, fbDBConnection);
+                myCmd.CommandType = CommandType.Text;
 
-            public void addIntValue(int value)
-            {
-                if (dataType == null)
-                    dataType = typeof(int);
-                values.Add(value);
-            }
-
-            public void addDoubleValue(double value)
-            {
-                if (dataType == null || dataType == typeof(int))
-                    dataType = typeof(double);
-                values.Add(value);
-            }
-            public void addByteArrayValue(byte[] value)
-            {
-                if (dataType == null || dataType == typeof(byte[]))
-                    dataType = typeof(byte[]);
-                values.Add(value);
-            }
-            public void addTextValue(string value)
-            {
-                DateTime date;
-                if (DateTime.TryParseExact(value, "yyyy-MM-dd hh:mm:ss", null, System.Globalization.DateTimeStyles.None, out date))
+                try
                 {
-                    if (dataType == null)
-                        dataType = typeof(DateTime);
-                    values.Add(date);
+                    result = myCmd.ExecuteScalar();
                 }
-                else
+                catch (Exception ex)
                 {
-                    dataType = typeof(string);
-                    values.Add(value);
+                    throw new FirebirdException("Cannot execute the SQL statement\r\n " + query + "\r\n" + ex.Message);
+                }
+                finally
+                {
+                    if (myCmd != null)
+                    {
+                        myCmd.Dispose();
+                        myCmd = null;
+                    }
                 }
             }
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public void addNull()
-            {
-                values.Add(null);
-            }
-
-            /// <summary>
-            /// Get the value object for this column at a rowIndex
-            /// </summary>
-            /// <param name="rowIndex">The row index</param>
-            /// <returns>The value object</returns>
-            internal object GetValue(int rowIndex)
-            {
-                if (rowIndex >= values.Count)
-                    throw new Exception("Not enough values found when creating DataTable from Firebird query.");
-                if (values[rowIndex] == null)
-                    return DBNull.Value;
-                else if (dataType == typeof(int))
-                    return Convert.ToInt32(values[rowIndex]);
-                else if (dataType == typeof(double))
-                    return Convert.ToDouble(values[rowIndex], System.Globalization.CultureInfo.InvariantCulture);
-                else if (dataType == typeof(DateTime))
-                    return Convert.ToDateTime(values[rowIndex]);
-                else if (dataType == typeof(byte[]))
-                    return values[rowIndex];
-                else
-                {
-                    if (values[rowIndex].GetType() == typeof(DateTime))
-                        return Convert.ToDateTime(values[rowIndex]).ToString("yyyy-MM-dd hh:mm:ss");
-                    return values[rowIndex].ToString();
-                }
-            }
+            else
+                throw new FirebirdException("Firebird database is not open.");
+            return result;
         }
 
         /// <summary>
@@ -279,13 +280,12 @@ namespace APSIM.Shared.Utilities
 
                 try
                 {
-                    myCmd.ExecuteNonQuery();
                     FbDataAdapter da = new FbDataAdapter(myCmd);
                     da.Fill(dt);
                 }
                 catch (Exception ex)
                 {
-                    this.CloseDatabase();
+                    // this.CloseDatabase();
                     throw new FirebirdException("Cannot execute the SQL statement \r\n" + query + "\r\n" + ex.Message);
                 }
                 finally
@@ -398,10 +398,89 @@ namespace APSIM.Shared.Utilities
                 DataTable dt = ExecuteQuery(sql);
                 foreach (DataRow dr in dt.Rows)
                 {
-                    columnNames.Add(((string)dr[0]).Trim());
+                    string colName = GetLongColumnName(tableName, (string)dr[0]).Trim();
+                    if (!String.IsNullOrEmpty(colName))
+                        columnNames.Add(colName);
                 }
             }
             return columnNames;
+        }
+
+        /// <summary>Gets the long name of a column</summary>
+        /// <param name="tableName">Name of the table</param>
+        /// <param name="colNo">Number of the column</param>
+        /// <returns>A string holding the long name of the column</returns>
+        public string GetLongColumnName(string tableName, int colNo)
+        {
+            if (colNo >= 0 && colInfoMap.TryGetValue(tableName, out ColumnNameMap nameMap) && colNo < nameMap.LongNames.Count)
+                return nameMap.LongNames[colNo];
+            else
+                return "";
+            /*
+            string sql = "SELECT [ColumnName] FROM [_ColumnInfo] Where [TableName] = \'" +
+                          tableName + "\' AND [ColumnNumber] = " + colNo.ToString();
+            DataTable dt = ExecuteQuery(sql);
+            if (dt.Rows.Count > 0)
+                return ((string)dt.Rows[0][0]).Trim();
+            else
+                return "";
+            */
+        }
+
+        /// <summary>Gets the short name of an existing column</summary>
+        /// <param name="tableName">Name of the table</param>
+        /// <param name="longName">Long name of the column</param>
+        /// <returns>A string holding the short name of the column</returns>
+        public string GetShortColumnName(string tableName, string longName)
+        {
+            if (tableName.StartsWith("_") || string.IsNullOrEmpty(longName)
+                || longName.Equals("SimulationID", StringComparison.OrdinalIgnoreCase)
+                || longName.Equals("SimulationName", StringComparison.OrdinalIgnoreCase)
+                || longName.Equals("CheckpointID", StringComparison.OrdinalIgnoreCase)
+                || longName.Equals("CheckpointName", StringComparison.OrdinalIgnoreCase))
+                return longName;
+            else if (colInfoMap.TryGetValue(tableName, out ColumnNameMap nameMap) && nameMap.ColDict.TryGetValue(longName, out int colNumber))
+                return "COL_" + colNumber.ToString();
+            else
+                return "";
+        }
+
+        /// <summary>Gets the long name of an existing column</summary>
+        /// <param name="tableName">Name of the table</param>
+        /// <param name="shortName">Short name of the column</param>
+        /// <returns>A string holding the long name of the column</returns>
+        public string GetLongColumnName(string tableName, string shortName)
+        {
+            if (tableName.StartsWith("_") || !shortName.StartsWith("COL_"))
+                return shortName;
+            else if (Int32.TryParse(shortName.Substring(4), out int colNo))
+                return GetLongColumnName(tableName, colNo);
+            else
+                return "";
+        }
+
+        /// <summary>
+        /// Get the column number for a specifed column name
+        /// </summary>
+        /// <param name="tableName">Name of the table</param>
+        /// <param name="colName">Name of the column</param>
+        /// <returns></returns>
+        public int GetColumnNumber(string tableName, string colName)
+        {
+            if (colInfoMap.TryGetValue(tableName, out ColumnNameMap nameMap) && (nameMap.ColDict.TryGetValue(colName, out int colNumber)))
+                return colNumber;
+            else
+                return -1;
+
+            /*
+            string sql = "SELECT [ColumnNumber] FROM [_ColumnInfo] Where [TableName] = \'" +
+                          tableName + "\' AND [ColumnName] = '" + colName + "'";
+            object result = ExecuteScalar(sql);
+            if (result == null)
+                return -1;
+            else
+                return (int)result;
+            */
         }
 
         /// <summary>Return a list of column names with a data type of string.</summary>
@@ -471,7 +550,26 @@ namespace APSIM.Shared.Utilities
         public void DropColumns(string tableName, IEnumerable<string> colsToRemove)
         {
             foreach (string columnName in colsToRemove)
-                ExecuteNonQuery("ALTER TABLE \"" + tableName + "\" DROP \"" + columnName + "\"");
+                DropColumn(tableName, columnName);
+        }
+
+        /// <summary>
+        /// Drop a single column from a table.
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <param name="colToRemove"></param>
+        private void DropColumn(string tableName, string colToRemove)
+        {
+            this.ExecuteNonQuery("ALTER TABLE \"" + tableName + "\" DROP \"" + colToRemove + "\"");
+            this.ExecuteNonQuery("DELETE FROM \"_ColumnInfo\" WHERE \"TableName\"='" + tableName + " AND \"ColumnName\"='" + colToRemove + "'");
+            if (colInfoMap.TryGetValue(tableName, out ColumnNameMap nameMap))
+            {
+                if (nameMap.ColDict.TryGetValue(colToRemove, out int colNo))
+                {
+                    nameMap.ColDict.Remove(colToRemove);
+                    nameMap.LongNames.RemoveAt(colNo);
+                }
+            }
         }
 
         /// <summary>
@@ -482,9 +580,55 @@ namespace APSIM.Shared.Utilities
         /// <param name="columnType">The db column type</param>
         public void AddColumn(string tableName, string columnName, string columnType)
         {
-            columnName = columnName.Substring(0, Math.Min(31, columnName.Length));
-            string sql = "ALTER TABLE \"" + tableName + "\" ADD \"" + columnName + "\" " + columnType;
+            int colNo = -1;
+            if (IsOpen)
+            {
+                string sql = "select rdb$field_name from rdb$relation_fields ";
+                sql += "where rdb$relation_name = '" + tableName + "' ";
+
+                DataTable dt = ExecuteQuery(sql);
+                colNo = dt.Rows.Count;
+            }
+            AddColumn(tableName, columnName, columnType, colNo);
+        }
+
+        /// <summary>
+        /// Do an ALTER on the db table and add a column
+        /// </summary>
+        /// <param name="tableName">The table name</param>
+        /// <param name="columnName">The column to add</param>
+        /// <param name="columnType">The db column type</param>
+        /// <param name="columnNumber">The column number (-1 if not to be used)</param>
+        private void AddColumn(string tableName, string columnName, string columnType, int columnNumber)
+        {
+            string colName;
+            if (tableName.StartsWith("_") || columnNumber < 0
+                || columnName.Equals("SimulationID", StringComparison.OrdinalIgnoreCase)
+                || columnName.Equals("SimulationName", StringComparison.OrdinalIgnoreCase)
+                || columnName.Equals("CheckpointID", StringComparison.OrdinalIgnoreCase)
+                || columnName.Equals("CheckpointName", StringComparison.OrdinalIgnoreCase))
+                colName = columnName.Substring(0, Math.Min(31, columnName.Length));
+            else
+                colName = "COL_" + columnNumber.ToString();
+
+            string sql;
+            if (FieldExists(tableName, colName))
+                DropColumn(tableName, colName);
+
+            sql = "ALTER TABLE \"" + tableName + "\" ADD \"" + colName + "\" " + columnType;
             this.ExecuteNonQuery(sql);
+
+            this.ExecuteNonQuery("INSERT INTO \"_ColumnInfo\" VALUES('" + tableName + "', + '" + columnName + "', " + columnNumber.ToString() + ")");
+
+            ColumnNameMap nameMap;
+            if (!colInfoMap.TryGetValue(tableName, out nameMap))
+            {
+                nameMap = new ColumnNameMap();
+                colInfoMap.Add(tableName, nameMap);
+            }
+
+            nameMap.ColDict.Add(columnName, columnNumber);
+            nameMap.LongNames.Insert(columnNumber, columnName);
         }
 
         /// <summary>
@@ -525,8 +669,19 @@ namespace APSIM.Shared.Utilities
                 if (i > 0)
                     sql.Append(',');
                 sql.Append("\"");
+                string columnName = columnNames[i];
                 ///// sql.Append(columnNames[i]);
-                sql.Append(columnNames[i].Substring(0, Math.Min(31, columnNames[i].Length))); ///// 
+                if (tableName.StartsWith("_")
+                || columnName.Equals("SimulationID", StringComparison.OrdinalIgnoreCase)
+                || columnName.Equals("SimulationName", StringComparison.OrdinalIgnoreCase)
+                || columnName.Equals("CheckpointID", StringComparison.OrdinalIgnoreCase)
+                || columnName.Equals("CheckpointName", StringComparison.OrdinalIgnoreCase))
+                    sql.Append(columnName.Substring(0, Math.Min(31, columnNames[i].Length))); //////
+                else
+                {
+                    int insertCol = GetColumnNumber(tableName, columnNames[i]);
+                    sql.Append("COL_" + insertCol.ToString());
+                }
                 sql.Append("\"");
             }
             sql.Append(") VALUES (");
@@ -535,7 +690,7 @@ namespace APSIM.Shared.Utilities
             {
                 if (i > 0)
                     sql.Append(',');
-                sql.Append('@' + ((i + 1).ToString()));
+                sql.Append('@' + (i + 1).ToString());
             }
 
             sql.Append(')');
@@ -552,7 +707,7 @@ namespace APSIM.Shared.Utilities
         /// <returns></returns>
         public int InsertRows(string tableName, List<string> columnNames, List<object[]> values)
         {
-            lock (lockThis)
+            // lock (lockThis)
             {
                 FbTransaction myTransaction = fbDBConnection.BeginTransaction();
 
@@ -566,16 +721,115 @@ namespace APSIM.Shared.Utilities
                         index = rowIndex;
                         BindParametersAndRunQuery(myTransaction, sql, values[rowIndex]);
                     }
+                    myTransaction.Commit();
                 }
                 catch (Exception ex)
                 {
                     throw new FirebirdException("Exception " + ex.Message + "\r\nCannot insert row for " + tableName + " in InsertRows():" + String.Join(", ", values[index].ToString()).ToArray());
                 }
-
-                myTransaction.Commit();
-                myTransaction.Dispose();
+                finally
+                {
+                    myTransaction.Dispose();
+                }
             }
             return 0;
+        }
+
+        /// <summary>
+        /// Prepares a bindable query for the insertion of all columns of a datatable into the database
+        /// </summary>
+        /// <param name="table">A DataTable to be inserted</param>
+        /// <returns>A "handle" for the resulting query</returns>
+        public object PrepareBindableInsertQuery(DataTable table)
+        {
+            var columnNames = table.Columns.Cast<DataColumn>().Select(col => col.ColumnName).ToList<string>();
+            var sql = CreateInsertSQL(table.TableName, columnNames);
+            FbCommand cmd = fbDBConnection.CreateCommand();
+            var transactionOptions = new FbTransactionOptions()
+            {
+                TransactionBehavior = FbTransactionBehavior.Concurrency |
+                                      FbTransactionBehavior.Wait |
+                                      FbTransactionBehavior.NoAutoUndo
+            };
+            cmd.Transaction = fbDBConnection.BeginTransaction();
+            cmd.CommandText = sql;
+            cmd.CommandType = CommandType.Text;
+            int i = 1;
+            foreach (DataColumn column in table.Columns)
+            {
+                FbParameter newParam;
+                //// if (Convert.IsDBNull(values[i]) || values[i] == null)
+                //// {
+                ////     cmd.Parameters.Add("@" + ((i + 1).ToString()), FbDbType.Text).Value = string.Empty;
+                //// }
+                // Enums have an underlying type of Int32, but we want to store
+                // their string representation, not their integer value
+                if (column.DataType.IsEnum)
+                {
+                    newParam = cmd.Parameters.Add("@" + ((i).ToString()), FbDbType.Text);
+                }
+                else if (column.DataType == typeof(DateTime))
+                {
+                    newParam = cmd.Parameters.Add("@" + ((i).ToString()), FbDbType.Date);
+                }
+                else if (column.DataType == typeof(int))
+                {
+                    newParam = cmd.Parameters.Add("@" + ((i).ToString()), FbDbType.Integer);
+                }
+                else if (column.DataType == typeof(float))
+                {
+                    newParam = cmd.Parameters.Add("@" + ((i).ToString()), FbDbType.Float);
+                }
+                else if (column.DataType == typeof(double))
+                {
+                    newParam = cmd.Parameters.Add("@" + ((i).ToString()), FbDbType.Double);
+                }
+                else if (column.DataType == typeof(byte[]))
+                {
+                    newParam = cmd.Parameters.Add("@" + ((i).ToString()), FbDbType.Binary);
+                }
+                else
+                    newParam = cmd.Parameters.Add("@" + ((i).ToString()), FbDbType.Text);
+                newParam.IsNullable = true;
+                i++;
+            }
+            cmd.Prepare();
+            return cmd;
+        }
+
+        /// <summary>
+        /// Executes a previously prepared bindable query, inserting a new set of parameters
+        /// </summary>
+        /// <param name="bindableQuery">The prepared query to be executed</param>
+        /// <param name="values">The values to be inserted by using the query</param>
+        public void RunBindableQuery(object bindableQuery, IEnumerable<object> values)
+        {
+            FbCommand cmd = (FbCommand)bindableQuery;
+            int i = 0;
+            foreach (var value in values)
+            {
+                cmd.Parameters[i].Value = value;
+                // Enums have an underlying type of Int32, but we want to store
+                // their string representation, not their integer value
+                if (value.GetType().IsEnum)
+                    cmd.Parameters[i].Value = value.ToString();
+                else
+                    cmd.Parameters[i].Value = value;
+                i++;
+            }
+            cmd.ExecuteNonQuery();
+        }
+
+        /// <summary>
+        /// Finalises and destroys a prepared bindable query
+        /// </summary>
+        /// <param name="bindableQuery">The query to be finalised</param>
+        public void FinalizeBindableQuery(object bindableQuery)
+        {
+            FbCommand command = (FbCommand)bindableQuery;
+            if (command.Transaction != null)
+                command.Transaction.Commit();
+            command.Dispose();
         }
 
         private object lockThis = new object();
@@ -597,6 +851,12 @@ namespace APSIM.Shared.Utilities
         /// <summary>Convert .NET type into an Firebird type</summary>
         public string GetDBDataTypeName(Type type)
         {
+            return GetDBDataTypeName(true);
+        }
+
+        /// <summary>Convert .NET type into an Firebird type</summary>
+        public string GetDBDataTypeName(Type type, bool allowLongStrings)
+        {
             if (type == null)
                 return "INTEGER";
             else if (type.ToString() == "System.DateTime")
@@ -607,13 +867,35 @@ namespace APSIM.Shared.Utilities
                 return "FLOAT";
             else if (type.ToString() == "System.Double")
                 return "DOUBLE PRECISION";
+            else if (allowLongStrings)
+                return "BLOB SUB_TYPE TEXT";
             else
-                return "BLOB SUB_TYPE TEXT"; // return "VARCHAR(2500)";
+                return "VARCHAR(50)";
         }
 
         /// <summary>Create the new table</summary>
         public void CreateTable(string tableName, List<string> colNames, List<string> colTypes)
         {
+
+            // We use the _ColumnInfo table to map between column names and column numbers
+            if (TableExists("_ColumnInfo"))
+                // We're creating a new table here, so delete any old records
+                this.ExecuteNonQuery("DELETE FROM \"_ColumnInfo\" WHERE \"TableName\"='" + tableName + "'");
+            else
+                this.ExecuteNonQuery("CREATE TABLE \"_ColumnInfo\" (\"TableName\" VARCHAR(500), \"ColumnName\" VARCHAR(500), \"ColumnNumber\" INTEGER)");
+
+            ColumnNameMap nameMap;
+            if (colInfoMap.TryGetValue(tableName, out nameMap))
+            {
+                nameMap.ColDict.Clear();
+                nameMap.LongNames.Clear();
+            }
+            else
+            {
+                nameMap = new ColumnNameMap();
+                colInfoMap.Add(tableName, nameMap);
+            }
+
             StringBuilder sql = new StringBuilder();
 
             for (int c = 0; c < colNames.Count; c++)
@@ -621,19 +903,49 @@ namespace APSIM.Shared.Utilities
                 if (sql.Length > 0)
                     sql.Append(',');
 
+                string columnName = colNames[c];
                 sql.Append("\"");
                 // sql.Append(colNames[c]);
-                sql.Append(colNames[c].Substring(0, Math.Min(31, colNames[c].Length))); ///// 
+                if (tableName.StartsWith("_")
+                || columnName.Equals("SimulationID", StringComparison.OrdinalIgnoreCase)
+                || columnName.Equals("SimulationName", StringComparison.OrdinalIgnoreCase)
+                || columnName.Equals("CheckpointID", StringComparison.OrdinalIgnoreCase)
+                || columnName.Equals("CheckpointName", StringComparison.OrdinalIgnoreCase))
+                    sql.Append(columnName.Substring(0, Math.Min(31, columnName.Length))); ///// 
+                else
+                    sql.Append("COL_" + c.ToString());
                 sql.Append("\" ");
                 if (colTypes[c] == null)
                     sql.Append("INTEGER");
                 else
                     sql.Append(colTypes[c]);
+
+                this.ExecuteNonQuery("INSERT INTO \"_ColumnInfo\" VALUES('" + tableName + "', + '" + columnName + "', " +  c.ToString() + ")");
+                nameMap.ColDict.Add(columnName, c);
+                nameMap.LongNames.Insert(c, columnName);
             }
 
             sql.Insert(0, "CREATE TABLE \"" + tableName + "\" (");
             sql.Append(')');
-            ExecuteNonQuery(sql.ToString());
+            this.ExecuteNonQuery(sql.ToString());
+
+        }
+
+        /// <summary>
+        /// Drop a table from the database
+        /// </summary>
+        /// <param name="tableName"></param>
+        public void DropTable(string tableName)
+        {
+            if (!tableName.Equals("_ColumnInfo", StringComparison.OrdinalIgnoreCase))
+            {
+                // FbConnection.ClearPool(fbDBConnection);
+                this.ExecuteNonQuery(string.Format("DROP TABLE \"{0}\"", tableName));
+            }
+            if (TableExists("_ColumnInfo"))
+                this.ExecuteNonQuery("DELETE FROM \"_ColumnInfo\" WHERE \"TableName\" = '" + tableName + "'");
+            if (colInfoMap.ContainsKey(tableName))
+                colInfoMap.Remove(tableName);
         }
 
         /// <summary>
@@ -657,17 +969,16 @@ namespace APSIM.Shared.Utilities
             return string.Format("'{0, 1}.{1, 1}.{2, 1:d4}, {3, 1}:{4, 1}:{5, 1}.000'", value.Day, value.Month, value.Year, value.Hour, value.Minute, value.Second);
         }
 
-        /// <summary>A class representing an exception thrown by this library.</summary>
-        [Serializable]
-        public class FirebirdException : Exception
+        /// <summary>
+        /// A class for quick mapping between column name and column number
+        /// </summary>
+        class ColumnNameMap
         {
-            /// <summary>Initializes a new instance of the <see cref="FirebirdException"/> class.</summary>
-            /// <param name="message">The message that describes the error.</param>
-            public FirebirdException(string message) :
-                base(message)
-            {
+            // List of "long" column names - use column number as the index 
+            public List<string> LongNames = new List<string>();
 
-            }
+            // Dictionary to allow the column number for a "long" column name to be accessed quickly
+            public Dictionary<string, int> ColDict = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         }
     }
 }

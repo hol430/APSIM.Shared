@@ -921,6 +921,40 @@ namespace APSIM.Shared.Utilities
             return 0;
         }
 
+        /// <summary>
+        /// Prepares a bindable query for the insertion of all columns of a datatable into the database
+        /// </summary>
+        /// <param name="table">A DataTable to be inserted</param>
+        /// <returns>A "handle" for the resulting query</returns>
+        public object PrepareBindableInsertQuery(DataTable table)
+        {
+            IntPtr queryHandle = IntPtr.Zero;
+            // Get a list of column names.
+            var columnNames = table.Columns.Cast<DataColumn>().Select(col => col.ColumnName);
+            var sql = CreateInsertSQL(table.TableName, columnNames);
+            queryHandle = Prepare(sql);
+            return queryHandle;
+        }
+
+        /// <summary>
+        /// Executes a previously prepared bindable query, inserting a new set of parameters
+        /// </summary>
+        /// <param name="bindableQuery">The prepared query to be executed</param>
+        /// <param name="values">The values to be inserted by using the query</param>
+        public void RunBindableQuery(object bindableQuery, IEnumerable<object> values)
+        {
+            BindParametersAndRunQuery((IntPtr)bindableQuery, values);
+        }
+
+        /// <summary>
+        /// Finalises and destroys a prepared bindable query
+        /// </summary>
+        /// <param name="bindableQuery">The query to be finalised</param>
+        public void FinalizeBindableQuery(object bindableQuery)
+        {
+            Finalize((IntPtr)bindableQuery);
+        }
+
         /// <summary>Convert .NET type into an SQLite type</summary>
         public string GetDBDataTypeName(object value)
         {
@@ -951,6 +985,12 @@ namespace APSIM.Shared.Utilities
                 return "char(50)";
         }
 
+        /// <summary>Convert .NET type into an SQLite type</summary>
+        public string GetDBDataTypeName(Type type, bool allowLongStrings)
+        {
+            return GetDBDataTypeName(type);
+        }
+
         /// <summary>Create the new table</summary>
         public void CreateTable(string tableName, List<string> colNames, List<string> colTypes)
         {
@@ -973,6 +1013,16 @@ namespace APSIM.Shared.Utilities
             sql.Insert(0, "CREATE TABLE " + tableName + " (");
             sql.Append(')');
             ExecuteNonQuery(sql.ToString());
+        }
+
+        /// <summary>
+        /// Drop a table from the database
+        /// </summary>
+        /// <param name="tableName"></param>
+        public void DropTable(string tableName)
+        {
+            ExecuteNonQuery(string.Format("DROP TABLE [{0}]", tableName));
+            ExecuteNonQuery("VACUUM");
         }
 
         /// <summary>

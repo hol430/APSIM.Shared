@@ -3,6 +3,7 @@ namespace APSIM.Shared.Utilities
 {
     using System.Collections.Generic;
     using System;
+    using System.Data;
 
     /// <summary>
     /// A database specific connection
@@ -101,11 +102,34 @@ namespace APSIM.Shared.Utilities
         /// <returns></returns>
         int InsertRows(string tableName, List<string> columnNames, List<object[]> values);
 
+        /// <summary>
+        /// Prepares a bindable query for the insertion of all columns of a datatable into the database
+        /// </summary>
+        /// <param name="table">A DataTable to be inserted</param>
+        /// <returns>A "handle" for the resulting query</returns>
+        object PrepareBindableInsertQuery(DataTable table);
+
+        /// <summary>
+        /// Executes a previously prepared bindable query, inserting a new set of parameters
+        /// </summary>
+        /// <param name="bindableQuery">The prepared query to be executed</param>
+        /// <param name="values">The values to be inserted by using the query</param>
+        void RunBindableQuery(object bindableQuery, IEnumerable<object> values);
+
+        /// <summary>
+        /// Finalises and destroys a prepared bindable query
+        /// </summary>
+        /// <param name="bindableQuery">The query to be finalised</param>
+        void FinalizeBindableQuery(object bindableQuery);
+
         /// <summary>Convert .NET value into an SQLite type</summary>
         string GetDBDataTypeName(object value);
 
         /// <summary>Convert .NET type into an SQLite type</summary>
         string GetDBDataTypeName(Type type);
+
+        /// <summary>Convert .NET type into an SQLite type</summary>
+        string GetDBDataTypeName(Type type, bool allowLongStrings);
 
         /// <summary>
         /// 
@@ -114,6 +138,12 @@ namespace APSIM.Shared.Utilities
         /// <param name="colNames"></param>
         /// <param name="colTypes"></param>
         void CreateTable(string tableName, List<string> colNames, List<string> colTypes);
+
+        /// <summary>
+        /// Drop a table from the database
+        /// </summary>
+        /// <param name="tableName"></param>
+        void DropTable(string tableName);
 
         /// <summary>
         /// 
