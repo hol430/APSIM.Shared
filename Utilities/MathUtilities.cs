@@ -1809,7 +1809,7 @@ namespace APSIM.Shared.Utilities
         /// <summary>
         /// From: http://stackoverflow.com/questions/545703/combination-of-listlistint
         /// </summary>
-        public static List<List<T>> AllCombinationsOf<T>(params List<T>[] sets)
+        public static List<List<T>> AllCombinationsOf<T>(List<T>[] sets, bool reverse = false)
         {
             // need array bounds checking etc for production
             var combinations = new List<List<T>>();
@@ -1821,19 +1821,22 @@ namespace APSIM.Shared.Utilities
                     combinations.Add(new List<T> { value });
 
                 foreach (var set in sets.Skip(1))
-                    combinations = AddExtraSet(combinations, set);
+                    combinations = AddExtraSet(combinations, set, reverse);
             }
             return combinations;
         }
 
         private static List<List<T>> AddExtraSet<T>
-             (List<List<T>> combinations, List<T> set)
+             (List<List<T>> combinations, List<T> set, bool reverse)
         {
-            var newCombinations = from value in set
-                                  from combination in combinations
-                                  select new List<T>(combination) { value };
-
-            return newCombinations.ToList();
+            if (reverse)
+                return (from combination in combinations
+                       from value in set
+                       select new List<T>(combination) { value }).ToList();
+            else
+                return (from value in set
+                        from combination in combinations
+                        select new List<T>(combination) { value }).ToList();
         }
 
     }
