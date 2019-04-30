@@ -956,7 +956,24 @@ namespace APSIM.Shared.Utilities
         /// <param name="isUnique">Is the index a primary key?</param>
         public void CreateIndex(string tableName, List<string> colNames, bool isUnique)
         {
+            StringBuilder columnNamesCSV = new StringBuilder();
+            for (int c = 0; c < colNames.Count; c++)
+            {
+                if (columnNamesCSV.Length > 0)
+                    columnNamesCSV.Append(',');
 
+                columnNamesCSV.Append("[");
+                columnNamesCSV.Append(colNames[c]);
+                columnNamesCSV.Append("] ");
+            }
+
+            string uniqueString = null;
+            if (isUnique)
+                uniqueString = "UNIQUE";
+
+            var sql = String.Format("CREATE {0} INDEX [{1}Index] ON [{1}] ({2})",
+                                    uniqueString, tableName, columnNamesCSV.ToString());
+            ExecuteNonQuery(sql);
         }
 
         /// <summary>
