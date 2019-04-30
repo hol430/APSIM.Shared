@@ -790,8 +790,13 @@ namespace APSIM.Shared.Utilities
         {
             List<string> tableNames = new List<string>();
             DataTable tableData = ExecuteQuery("SELECT * FROM sqlite_master");
-            foreach (string tableName in DataTableUtilities.GetColumnAsStrings(tableData, "Name"))
-                tableNames.Add(tableName);
+            var names = DataTableUtilities.GetColumnAsStrings(tableData, "Name");
+            var types = DataTableUtilities.GetColumnAsStrings(tableData, "Type");
+            for (int i = 0; i < names.Length; i++)
+            {
+                if (types[i] == "table")
+                    tableNames.Add(names[i]);
+            }
             return tableNames;
         }
 
