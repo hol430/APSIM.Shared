@@ -75,6 +75,7 @@ namespace APSIM.Shared.Utilities
                 if (!File.Exists(path))
                 {
                     // create a new database
+                    // FbConnection.CreateDatabase(GetConnectionString(path, "localhost", "SYSDBA", "masterkey"), 4096, false, true);
                     FbConnection.CreateDatabase(GetConnectionString(path, "localhost", "SYSDBA", "masterkey"), true);
                     // TODO: may need to create tables here
 
@@ -540,6 +541,19 @@ namespace APSIM.Shared.Utilities
         {
             List<string> tableNames = GetTableNames();
             return tableNames.Contains(tableName);
+        }
+
+        /// <summary>
+        /// Returns true if the specified table exists, but holds no records
+        /// </summary>
+        /// <param name="tableName">Name of the table</param>
+        /// <returns></returns>
+        public bool TableIsEmpty(string tableName)
+        {
+            bool result = false;
+            if (TableExists(tableName))
+                result = ExecuteQueryReturnInt("SELECT COUNT(*) FROM \"" + tableName + "\"", 0) == 0;
+            return result;
         }
 
         /// <summary>
