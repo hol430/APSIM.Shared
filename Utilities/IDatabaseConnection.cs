@@ -69,6 +69,13 @@ namespace APSIM.Shared.Utilities
         List<string> GetTableColumns(string tableName);
 
         /// <summary>
+        /// Returns true if the specified table exists, but holds no records
+        /// </summary>
+        /// <param name="tableName">Name of the table</param>
+        /// <returns></returns>
+        bool TableIsEmpty(string tableName);
+
+        /// <summary>
         /// Drop (remove) columns from a table.
         /// </summary>
         /// <param name="tableName"></param>

@@ -804,6 +804,23 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>
+        /// Returns true if the specified table exists, but holds no records
+        /// </summary>
+        /// <param name="tableName">Name of the table</param>
+        /// <returns></returns>
+        public bool TableIsEmpty(string tableName)
+        {
+            bool result = false;
+            if (TableExists(tableName))
+            {
+                DataTable dTable = ExecuteQuery("SELECT COUNT(*) FROM [" + tableName + "]");
+                if (dTable != null)
+                    result = Convert.ToInt32(dTable.Rows[0][0]) == 0;
+            }
+            return result;
+        }
+
+        /// <summary>
         /// Drop (remove) columns from a table.
         /// </summary>
         /// <param name="tableName"></param>
