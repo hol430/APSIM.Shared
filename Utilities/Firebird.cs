@@ -452,7 +452,7 @@ namespace APSIM.Shared.Utilities
         /// <returns>A string holding the long name of the column</returns>
         public string GetLongColumnName(string tableName, string shortName)
         {
-            if (tableName.StartsWith("_") || !shortName.StartsWith("COL_"))
+            if (string.IsNullOrEmpty(shortName) || tableName.StartsWith("_") || !shortName.StartsWith("COL_"))
                 return shortName;
             else if (Int32.TryParse(shortName.Substring(4), out int colNo))
                 return GetLongColumnName(tableName, colNo);
@@ -493,14 +493,17 @@ namespace APSIM.Shared.Utilities
 
             if (IsOpen)
             {
-                string sql = "select rdb$field_name from rdb$relation_fields ";
-                sql += "where rdb$relation_name = '" + tableName + "' ";
-                sql += "order by rdb$field_position; ";
-
+                // We could test for VARCHAR and BLOB field types, but as a shortcut, just testing for whether there is a non-null value
+                // for the character_set_id seems to suffice.
+                string sql = "SELECT R.rdb$field_name FROM rdb$relation_fields R JOIN rdb$fields F on F.RDB$FIELD_NAME = R.RDB$FIELD_SOURCE "
+                           + "WHERE rdb$relation_name = '" + tableName + "' AND NOT(F.RDB$CHARACTER_SET_ID IS NULL) "
+                           + "order by R.rdb$field_position; ";
                 DataTable dt = ExecuteQuery(sql);
                 foreach (DataRow dr in dt.Rows)
                 {
-                    columnNames.Add(((string)dr[0]).Trim());
+                    string colName = GetLongColumnName(tableName, (string)dr[0]).Trim();
+                    if (!String.IsNullOrEmpty(colName))
+                        columnNames.Add(colName);
                 }
             }
             return columnNames;
