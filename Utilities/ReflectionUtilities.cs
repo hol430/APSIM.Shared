@@ -278,7 +278,16 @@ namespace APSIM.Shared.Utilities
         {
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                foreach (Type type in assembly.GetTypes())
+                Type[] types = new Type[0];
+                try
+                {
+                    types = assembly.GetTypes();
+                }
+                catch (ReflectionTypeLoadException err)
+                {
+                    continue;
+                }
+                foreach (Type type in types)
                 {
                     if (type.Name == typeName)
                         return type;
