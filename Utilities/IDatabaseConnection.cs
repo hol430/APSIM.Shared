@@ -147,6 +147,14 @@ namespace APSIM.Shared.Utilities
         void CreateTable(string tableName, List<string> colNames, List<string> colTypes);
 
         /// <summary>
+        /// Create an index.
+        /// </summary>
+        /// <param name="tableName">The table to create the index on.</param>
+        /// <param name="colNames">The column names of the index.</param>
+        /// <param name="isUnique">Is the index a primary key?</param>
+        void CreateIndex(string tableName, List<string> colNames, bool isUnique);
+
+        /// <summary>
         /// Drop a table from the database
         /// </summary>
         /// <param name="tableName"></param>

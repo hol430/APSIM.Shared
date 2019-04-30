@@ -790,8 +790,13 @@ namespace APSIM.Shared.Utilities
         {
             List<string> tableNames = new List<string>();
             DataTable tableData = ExecuteQuery("SELECT * FROM sqlite_master");
-            foreach (string tableName in DataTableUtilities.GetColumnAsStrings(tableData, "Name"))
-                tableNames.Add(tableName);
+            var names = DataTableUtilities.GetColumnAsStrings(tableData, "Name");
+            var types = DataTableUtilities.GetColumnAsStrings(tableData, "Type");
+            for (int i = 0; i < names.Length; i++)
+            {
+                if (types[i] == "table")
+                    tableNames.Add(names[i]);
+            }
             return tableNames;
         }
 
@@ -1030,6 +1035,34 @@ namespace APSIM.Shared.Utilities
             sql.Insert(0, "CREATE TABLE " + tableName + " (");
             sql.Append(')');
             ExecuteNonQuery(sql.ToString());
+        }
+
+        /// <summary>
+        /// Create an index.
+        /// </summary>
+        /// <param name="tableName">The table to create the index on.</param>
+        /// <param name="colNames">The column names of the index.</param>
+        /// <param name="isUnique">Is the index a primary key?</param>
+        public void CreateIndex(string tableName, List<string> colNames, bool isUnique)
+        {
+            StringBuilder columnNamesCSV = new StringBuilder();
+            for (int c = 0; c < colNames.Count; c++)
+            {
+                if (columnNamesCSV.Length > 0)
+                    columnNamesCSV.Append(',');
+
+                columnNamesCSV.Append("[");
+                columnNamesCSV.Append(colNames[c]);
+                columnNamesCSV.Append("] ");
+            }
+
+            string uniqueString = null;
+            if (isUnique)
+                uniqueString = "UNIQUE";
+
+            var sql = String.Format("CREATE {0} INDEX [{1}Index] ON [{1}] ({2})",
+                                    uniqueString, tableName, columnNamesCSV.ToString());
+            ExecuteNonQuery(sql);
         }
 
         /// <summary>
