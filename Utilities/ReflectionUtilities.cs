@@ -283,7 +283,7 @@ namespace APSIM.Shared.Utilities
                 {
                     types = assembly.GetTypes();
                 }
-                catch (ReflectionTypeLoadException err)
+                catch (ReflectionTypeLoadException)
                 {
                     continue;
                 }
