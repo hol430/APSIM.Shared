@@ -162,6 +162,7 @@
     <Compile Include="Utilities\ExpressionEvaluator.cs" />
     <Compile Include="Utilities\FTPClient.cs" />
     <Compile Include="Utilities\IntegerToWritten.cs" />
+    <Compile Include="Utilities\JobManagerCollection.cs" />
     <Compile Include="Utilities\JobRunnerSleepJob.cs" />
     <Compile Include="Utilities\JobRunnerSync.cs" />
     <Compile Include="Utilities\JobRunnerAsync.cs" />
