@@ -77,6 +77,15 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>
+        /// Returns true iff a value is greater than 0.
+        /// </summary>
+        /// <param name="value">The value to test.</param>
+        public static bool IsPositive(double value)
+        {
+            return IsGreaterThan(value, 0);
+        }
+
+        /// <summary>
         /// Round the specified value to zero if within the given tolerance
         /// </summary>
         public static double RoundToZero(double value, double tolerance)
