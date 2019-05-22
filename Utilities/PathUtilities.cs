@@ -67,6 +67,9 @@ namespace APSIM.Shared.Utilities
         /// <returns>The absolute path</returns>
         public static string GetAbsolutePath(string path, string relativePath)
         {
+            if (path == null)
+                return null;
+
             // Remove any %root% macro.
             string rootDirectory = System.IO.Directory.GetParent(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)).FullName;
             path = path.Replace("%root%", rootDirectory);
