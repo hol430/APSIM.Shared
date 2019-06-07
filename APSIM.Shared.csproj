@@ -168,6 +168,7 @@
     <Compile Include="Utilities\MathUtilities.cs" />
     <Compile Include="Utilities\MetUtilities.cs" />
     <Compile Include="Utilities\PathUtilities.cs" />
+    <Compile Include="Utilities\PipeUtilities.cs" />
     <Compile Include="Utilities\ProcessUtilities.cs" />
     <Compile Include="Utilities\ReflectionUtilities.cs" />
     <Compile Include="Utilities\SocketServer.cs" />
