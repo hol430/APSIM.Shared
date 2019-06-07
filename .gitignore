@@ -8,3 +8,4 @@ obj/Debug/APSIM.Shared.csproj.FileListAbsolute.txt
 *.cache
 obj/
 *.user
+.vs/
