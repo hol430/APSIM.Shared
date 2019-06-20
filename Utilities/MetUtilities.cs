@@ -390,8 +390,10 @@ namespace APSIM.Shared.Utilities
                 bool haveVPColumn = (table.Columns["VP"] != null);
 
                 //do we have a "doy" or "day" column, and which column is it in
-                bool haveDOYColumn = true;
                 int dayCol = table.Columns.IndexOf("day");
+                if (dayCol < 0)
+                    dayCol = table.Columns.IndexOf("doy");
+                bool haveDOYColumn = dayCol >= 0;
 
                 // Loop through all rows and calculate a QMax
                 DateTime cDate;
