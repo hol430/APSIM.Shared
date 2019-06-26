@@ -118,6 +118,7 @@ namespace APSIM.Shared.Utilities
             private StringBuilder output = new StringBuilder();
             private StringBuilder error = new StringBuilder();
             private Process process;
+            private bool finished = false;
 
             /// <summary>Invoked when the process exits.</summary>
             public EventHandler Exited;
@@ -192,7 +193,8 @@ namespace APSIM.Shared.Utilities
             /// <param name="e"></param>
             private void OnExited(object sender, EventArgs e)
             {
-                Thread.Sleep(500);  // wait for any stdout/stderr writing.
+                SpinWait.SpinUntil(() => finished);
+               
                 if (Exited != null)
                     Exited.Invoke(this, e);
             }
@@ -201,6 +203,7 @@ namespace APSIM.Shared.Utilities
             public void WaitForExit()
             {
                 process.WaitForExit();
+                SpinWait.SpinUntil(() => finished);
             }
 
             /// <summary>Kill the process.</summary>
@@ -214,7 +217,10 @@ namespace APSIM.Shared.Utilities
             /// <param name="outLine"></param>
             private void OutputHandler(object sendingProcess, DataReceivedEventArgs outLine)
             {
-                if (!string.IsNullOrWhiteSpace(outLine.Data))
+                if (outLine.Data == null)
+                    finished = true;
+
+                else if (!string.IsNullOrWhiteSpace(outLine.Data))
                 {
                     output.Append(outLine.Data + Environment.NewLine);
                     if (WriteToConsole)
