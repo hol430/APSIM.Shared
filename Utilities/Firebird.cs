@@ -158,7 +158,7 @@ namespace APSIM.Shared.Utilities
                     {
                         string tableName = ((string)row[0]).Trim();
                         string columnName = ((string)row[1]).Trim();
-                        int columnNumber = Convert.ToInt32(row[2]);
+                        int columnNumber = Convert.ToInt32(row[2], CultureInfo.InvariantCulture);
                         if (tableName != currentTable)
                         {
                             currentTable = tableName;
@@ -320,7 +320,7 @@ namespace APSIM.Shared.Utilities
             if (data != null)
             {
                 DataRow dr = data.Rows[0];
-                ReturnValue = Convert.ToInt32(dr[ColumnNumber]);
+                ReturnValue = Convert.ToInt32(dr[ColumnNumber], CultureInfo.InvariantCulture);
             }
 
             return ReturnValue;
@@ -665,7 +665,7 @@ namespace APSIM.Shared.Utilities
             sql += "and(r.rdb$system_flag is null or r.rdb$system_flag = 0);";
 
             DataTable dt = ExecuteQuery(sql);
-            return (Convert.ToInt32(dt.Rows[0][0]) > 0);
+            return (Convert.ToInt32(dt.Rows[0][0], CultureInfo.InvariantCulture) > 0);
         }
 
         /// <summary>

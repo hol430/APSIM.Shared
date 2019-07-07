@@ -7,6 +7,7 @@ namespace APSIM.Shared.Utilities
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using System.Net;
     using System.Net.Sockets;
@@ -214,7 +215,7 @@ namespace APSIM.Shared.Utilities
         /// <param name="obj">The object to send.</param>
         public static object Send(string serverName, int port, object obj)
         {
-            using (TcpClient server = new TcpClient(serverName, Convert.ToInt32(port)))
+            using (TcpClient server = new TcpClient(serverName, Convert.ToInt32(port, CultureInfo.InvariantCulture)))
             {
                 MemoryStream s = new MemoryStream();
                 //do

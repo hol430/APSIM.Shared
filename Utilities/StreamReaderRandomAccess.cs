@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text;
 using System;
+using System.Globalization;
 
 namespace APSIM.Shared.Utilities
 {
@@ -141,7 +142,7 @@ namespace APSIM.Shared.Utilities
         private bool LoadBuffer()
         {
 
-            g_bufferOffset = Convert.ToInt32(g_file.BaseStream.Position);
+            g_bufferOffset = Convert.ToInt32(g_file.BaseStream.Position, CultureInfo.InvariantCulture);
             g_position = 0;
             g_bufferSize = g_file.Read(g_buffer, 0, BUFFER_SIZE);
 

@@ -7,6 +7,7 @@ namespace APSIM.Shared.Utilities
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Text.RegularExpressions;
 
     /// <summary>
@@ -59,24 +60,24 @@ namespace APSIM.Shared.Utilities
 
             decDay = b - d - System.Math.Truncate(30.6001 * e) + f;
             if (e < 13.5)
-                mnth = Convert.ToInt32(e - 1);
+                mnth = Convert.ToInt32(e - 1, CultureInfo.InvariantCulture);
             else
-                mnth = Convert.ToInt32(e - 13);
+                mnth = Convert.ToInt32(e - 13, CultureInfo.InvariantCulture);
 
             if (mnth > 2)
-                yr = Convert.ToInt32(c - 4716);
+                yr = Convert.ToInt32(c - 4716, CultureInfo.InvariantCulture);
             else
-                yr = Convert.ToInt32(c - 4715);
+                yr = Convert.ToInt32(c - 4715, CultureInfo.InvariantCulture);
 
             //convert decDay to d,hr,min,sec
-            day = Convert.ToInt32(System.Math.Truncate(decDay));
+            day = Convert.ToInt32(System.Math.Truncate(decDay), CultureInfo.InvariantCulture);
             decHr = (decDay - day) * 24;
-            hr = Convert.ToInt32(System.Math.Truncate(decHr));
+            hr = Convert.ToInt32(System.Math.Truncate(decHr), CultureInfo.InvariantCulture);
             decMin = (decHr - hr) * 60;
-            min = Convert.ToInt32(System.Math.Truncate(decMin));
+            min = Convert.ToInt32(System.Math.Truncate(decMin), CultureInfo.InvariantCulture);
             decSec = (decMin - min) * 60;
-            sec = Convert.ToInt32(System.Math.Truncate(decSec));
-            ms = Convert.ToInt32(System.Math.Truncate(decSec - sec * 1000));
+            sec = Convert.ToInt32(System.Math.Truncate(decSec), CultureInfo.InvariantCulture);
+            ms = Convert.ToInt32(System.Math.Truncate(decSec - sec * 1000), CultureInfo.InvariantCulture);
 
             return new DateTime(yr, mnth, day, hr, min, sec, ms);
         }
@@ -106,7 +107,7 @@ namespace APSIM.Shared.Utilities
                     throw new ArgumentException();
 
                 int month = StringUtilities.IndexOfCaseInsensitive(LowerCaseMonths, ddMMM.Substring(posDelimiter + 1)) + 1;
-                int day = Convert.ToInt32(ddMMM.Substring(0, posDelimiter));
+                int day = Convert.ToInt32(ddMMM.Substring(0, posDelimiter), CultureInfo.InvariantCulture);
                 return new DateTime(year, month, day);
 
                 //return new DateTime(
@@ -307,7 +308,7 @@ namespace APSIM.Shared.Utilities
         {
             Match m = rxDMY.Match(dmy);
             if (m.Success)
-                return System.String.Format("{0}-{1,02:d2}-{2,02:d2}", m.Groups[3].Value, Convert.ToInt32(m.Groups[2].Value), Convert.ToInt32(m.Groups[1].Value));
+                return System.String.Format("{0}-{1,02:d2}-{2,02:d2}", m.Groups[3].Value, Convert.ToInt32(m.Groups[2].Value, CultureInfo.InvariantCulture), Convert.ToInt32(m.Groups[1].Value, CultureInfo.InvariantCulture));
             else
                 return "0001-01-01";    // default??
         }

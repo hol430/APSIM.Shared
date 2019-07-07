@@ -11,6 +11,7 @@ namespace APSIM.Shared.Utilities
     using System.Runtime.InteropServices;
     using System.Linq;
     using System.Text;
+    using System.Globalization;
 
     /// <summary>
     /// A custom marshaler that allows us to pass strings to the native SQLite DLL as
@@ -509,17 +510,17 @@ namespace APSIM.Shared.Utilities
                 if (values[rowIndex] == null)
                     return DBNull.Value;
                 else if (dataType == typeof(int))
-                    return Convert.ToInt32(values[rowIndex]);
+                    return Convert.ToInt32(values[rowIndex], CultureInfo.InvariantCulture);
                 else if (dataType == typeof(double))
                     return Convert.ToDouble(values[rowIndex], System.Globalization.CultureInfo.InvariantCulture);
                 else if (dataType == typeof(DateTime))
-                    return Convert.ToDateTime(values[rowIndex]);
+                    return Convert.ToDateTime(values[rowIndex], CultureInfo.InvariantCulture);
                 else if (dataType == typeof(byte[]))
                     return values[rowIndex];
                 else
                 {
                     if (values[rowIndex].GetType() == typeof(DateTime))
-                        return Convert.ToDateTime(values[rowIndex]).ToString("yyyy-MM-dd hh:mm:ss");
+                        return Convert.ToDateTime(values[rowIndex], CultureInfo.InvariantCulture).ToString("yyyy-MM-dd hh:mm:ss");
                     return values[rowIndex].ToString();
                 }
 
@@ -820,7 +821,7 @@ namespace APSIM.Shared.Utilities
             {
                 DataTable dTable = ExecuteQuery("SELECT COUNT(*) FROM [" + tableName + "]");
                 if (dTable != null)
-                    result = Convert.ToInt32(dTable.Rows[0][0]) == 0;
+                    result = Convert.ToInt32(dTable.Rows[0][0], CultureInfo.InvariantCulture) == 0;
             }
             return result;
         }

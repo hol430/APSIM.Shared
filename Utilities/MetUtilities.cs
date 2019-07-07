@@ -7,6 +7,8 @@ namespace APSIM.Shared.Utilities
 {
     using System;
     using System.Data;
+    using System.Globalization;
+
     /// <summary>
     /// A collection of weather utility functions
     /// </summary>
@@ -403,7 +405,7 @@ namespace APSIM.Shared.Utilities
                 {
                     if (haveDOYColumn == true)
                     {
-                        doy = Convert.ToInt16(table.Rows[r][dayCol]);
+                        doy = Convert.ToInt16(table.Rows[r][dayCol], CultureInfo.InvariantCulture);
                     }
                     else {
                         row = table.Rows[r];
@@ -414,12 +416,12 @@ namespace APSIM.Shared.Utilities
                     if (haveVPColumn && !Convert.IsDBNull(table.Rows[r]["vp"]))
                     {
                         table.Rows[r]["Qmax"] = MetUtilities.QMax(doy + 1, latitude, MetUtilities.Taz, MetUtilities.Alpha,
-                            Convert.ToSingle(table.Rows[r]["vp"]));
+                            Convert.ToSingle(table.Rows[r]["vp"], CultureInfo.InvariantCulture));
                     }
                     else
                     {
                         table.Rows[r]["Qmax"] = MetUtilities.QMax(doy + 1, latitude, MetUtilities.Taz, MetUtilities.Alpha,
-                            MetUtilities.svp(Convert.ToSingle(table.Rows[r]["mint"])));
+                            MetUtilities.svp(Convert.ToSingle(table.Rows[r]["mint"], CultureInfo.InvariantCulture)));
                     }
                 }
             }
@@ -506,7 +508,7 @@ namespace APSIM.Shared.Utilities
 
             functionReturnValue = 0.0;
 
-            for (i = 1; i <= Convert.ToInt32(itns); i++)
+            for (i = 1; i <= Convert.ToInt32(itns, CultureInfo.InvariantCulture); i++)
             {
                 T = start + i * dHS / itns;
                 M1 = M(day, lat, T - dHS / itns);
