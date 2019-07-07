@@ -1,4 +1,4 @@
-﻿namespace APSIM.Shared.Utilities
+﻿namespace APSIM.Shared.JobRunning
 {
     using System.Threading;
 
@@ -12,7 +12,7 @@
         /// Constructor.
         /// </summary>
         /// <param name="duration">Duration of sleep in milliseconds.</param>
-        public JobRunnerSleepJob(int duration = 500)
+        public JobRunnerSleepJob(int duration = 200)
         {
             durationOfSleep = duration;
         }

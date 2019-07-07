@@ -1,4 +1,4 @@
-﻿namespace APSIM.Shared.Utilities
+﻿namespace APSIM.Shared.JobRunning
 {
     /// <summary>A runnable interface.</summary>
     public interface IRunnable

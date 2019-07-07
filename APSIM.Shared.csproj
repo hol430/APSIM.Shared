@@ -116,6 +116,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="JobRunning\AllCompleteArguments.cs" />
     <Compile Include="OldAPSIM\ConvertSoilNode.cs" />
     <Compile Include="OldAPSIM\Shortcuts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -147,13 +148,11 @@
     <Compile Include="Utilities\ExcelUtilities.cs" />
     <Compile Include="Utilities\ApsimTextFile.cs" />
     <Compile Include="Utilities\Firebird.cs" />
-    <Compile Include="Utilities\IComputationalyTimeConsuming.cs" />
     <Compile Include="Utilities\IDatabaseConnection.cs" />
-    <Compile Include="Utilities\IJobRunner.cs" />
     <Compile Include="Utilities\IndexedDataTable.cs" />
     <Compile Include="Utilities\IndexedDataTableGroupEnumerator.cs" />
-    <Compile Include="Utilities\IRunnable.cs" />
-    <Compile Include="Utilities\IJobManager.cs" />
+    <Compile Include="JobRunning\IRunnable.cs" />
+    <Compile Include="JobRunning\IJobManager.cs" />
     <Compile Include="Utilities\ImageUtilities.cs" />
     <Compile Include="Utilities\Colour.cs" />
     <Compile Include="Utilities\DataTableUtilities.cs" />
@@ -162,12 +161,14 @@
     <Compile Include="Utilities\ExpressionEvaluator.cs" />
     <Compile Include="Utilities\FTPClient.cs" />
     <Compile Include="Utilities\IntegerToWritten.cs" />
-    <Compile Include="Utilities\JobRunnerSleepJob.cs" />
-    <Compile Include="Utilities\JobRunnerSync.cs" />
-    <Compile Include="Utilities\JobRunnerAsync.cs" />
+    <Compile Include="JobRunning\JobCompleteArguments.cs" />
+    <Compile Include="JobRunning\JobManager.cs" />
+    <Compile Include="JobRunning\JobRunner.cs" />
+    <Compile Include="JobRunning\JobRunnerSleepJob.cs" />
     <Compile Include="Utilities\MathUtilities.cs" />
     <Compile Include="Utilities\MetUtilities.cs" />
     <Compile Include="Utilities\PathUtilities.cs" />
+    <Compile Include="Utilities\PipeUtilities.cs" />
     <Compile Include="Utilities\ProcessUtilities.cs" />
     <Compile Include="Utilities\ReflectionUtilities.cs" />
     <Compile Include="Utilities\SocketServer.cs" />
@@ -181,6 +182,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

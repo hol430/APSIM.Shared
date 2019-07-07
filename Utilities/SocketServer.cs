@@ -20,14 +20,14 @@ namespace APSIM.Shared.Utilities
     /// </summary>
     public class SocketServer
     {
-        /// <summary>Thread signal.</summary>
-        private static ManualResetEvent allDone = new ManualResetEvent(false);
-
         /// <summary>A container of commands</summary>
         private Dictionary<string, EventHandler<CommandArgs>> commands = new Dictionary<string, EventHandler<CommandArgs>>();
 
         /// <summary>Should the server keep listening for socket connections?</summary>
         private bool keepListening = true;
+
+        /// <summary>Has the server stopped listening?</summary>
+        private bool stoppedListening = false;
 
         /// <summary>Error event argument class.</summary>
         public class ErrorArgs : EventArgs
@@ -103,17 +103,17 @@ namespace APSIM.Shared.Utilities
                 if (Error != null)
                     Error.Invoke(this, new ErrorArgs() { message = err.ToString() });
             }
+            stoppedListening = true;
         }
 
         /// <summary>Stop listening for socket connections</summary>
         public void StopListening()
         {
             keepListening = false;
-            allDone.Set();
-
             // Open a socket connection with dummy data (0) so that the ServerSocket.Accept
             // method in 'StartListening' method will return an then the method exits cleanly.
             Send("127.0.0.1", 2222, 0);
+            SpinWait.SpinUntil(() => stoppedListening);
         }
 
         /// <summary>Accept a socket connection</summary>
@@ -218,33 +218,40 @@ namespace APSIM.Shared.Utilities
             using (TcpClient server = new TcpClient(serverName, Convert.ToInt32(port, CultureInfo.InvariantCulture)))
             {
                 MemoryStream s = new MemoryStream();
-                Byte[] bData = EncodeData(obj);
-                server.GetStream().Write(bData, 0, bData.Length);
-                Byte[] bytes = new Byte[65536];
-
-                // Loop to receive all the data sent by the client.
-                int numBytesExpected = 0;
-                int totalNumBytes = 0;
-                int i = 0;
-                int NumBytesRead;
-                bool allDone = false;
-                do
+                //do
                 {
-                    NumBytesRead = server.GetStream().Read(bytes, 0, bytes.Length);
-                    s.Write(bytes, 0, NumBytesRead);
-                    totalNumBytes += NumBytesRead;
+                    Byte[] bData = EncodeData(obj);
+                    server.GetStream().Write(bData, 0, bData.Length);
+                    Byte[] bytes = new Byte[65536];
 
-                    if (numBytesExpected == 0 && totalNumBytes > 4)
-                        numBytesExpected = BitConverter.ToInt32(bytes, 0);
-                    if (numBytesExpected + 4 == totalNumBytes)
-                        allDone = true;
+                    // Loop to receive all the data sent by the client.
+                    int numBytesExpected = 0;
+                    int totalNumBytes = 0;
+                    int i = 0;
+                    int NumBytesRead;
+                    bool allDone = false;
+                    do
+                    {
+                        NumBytesRead = server.GetStream().Read(bytes, 0, bytes.Length);
+                        s.Write(bytes, 0, NumBytesRead);
+                        totalNumBytes += NumBytesRead;
 
-                    i++;
+                        if (numBytesExpected == 0 && totalNumBytes > 4)
+                            numBytesExpected = BitConverter.ToInt32(bytes, 0);
+                        if (numBytesExpected + 4 == totalNumBytes)
+                            allDone = true;
+
+                        i++;
+                    }
+                    while (NumBytesRead > 0 && !allDone);
                 }
-                while (!allDone);
+                //while (s.Length == 0);
 
                 // Decode the bytes and return.
-                return DecodeData(s.ToArray());
+                if (s.Length > 0)
+                    return DecodeData(s.ToArray());
+                else
+                    return null;
             }
         }
 

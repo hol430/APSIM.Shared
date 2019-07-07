@@ -11,7 +11,6 @@ namespace APSIM.Shared.Utilities
     using System.Diagnostics;
     using System.Threading;
     using System.Text;
-    using System.Globalization;
 
     /// <summary>
     /// A collection of utilities for dealing with processes (threads)
@@ -67,8 +66,8 @@ namespace APSIM.Shared.Utilities
                 // If we're on Linux, see if it's a hash bang script. Should really
                 // check executable flag via Mono.Unix.Native.Syscall.stat() too
                 if (System.IO.Path.VolumeSeparatorChar == '/' &&
-                    Convert.ToChar(data[0], CultureInfo.InvariantCulture) == '#' &&
-                    Convert.ToChar(data[1], CultureInfo.InvariantCulture) == '!')
+                    Convert.ToChar(data[0]) == '#' &&
+                    Convert.ToChar(data[1]) == '!')
                     return CompilationMode.Native;
                 // For now, if we're on Linux just see if it has an "ELF" header
                 if (System.IO.Path.VolumeSeparatorChar == '/' && data[0] == 0x7f && data[1] == 'E' && data[2] == 'L' && data[3] == 'F')
@@ -119,6 +118,7 @@ namespace APSIM.Shared.Utilities
             private StringBuilder output = new StringBuilder();
             private StringBuilder error = new StringBuilder();
             private Process process;
+            private bool finished = false;
 
             /// <summary>Invoked when the process exits.</summary>
             public EventHandler Exited;
@@ -193,7 +193,8 @@ namespace APSIM.Shared.Utilities
             /// <param name="e"></param>
             private void OnExited(object sender, EventArgs e)
             {
-                Thread.Sleep(500);  // wait for any stdout/stderr writing.
+                SpinWait.SpinUntil(() => finished);
+               
                 if (Exited != null)
                     Exited.Invoke(this, e);
             }
@@ -202,6 +203,7 @@ namespace APSIM.Shared.Utilities
             public void WaitForExit()
             {
                 process.WaitForExit();
+                SpinWait.SpinUntil(() => finished);
             }
 
             /// <summary>Kill the process.</summary>
@@ -215,7 +217,10 @@ namespace APSIM.Shared.Utilities
             /// <param name="outLine"></param>
             private void OutputHandler(object sendingProcess, DataReceivedEventArgs outLine)
             {
-                if (!string.IsNullOrWhiteSpace(outLine.Data))
+                if (outLine.Data == null)
+                    finished = true;
+
+                else if (!string.IsNullOrWhiteSpace(outLine.Data))
                 {
                     output.Append(outLine.Data + Environment.NewLine);
                     if (WriteToConsole)
