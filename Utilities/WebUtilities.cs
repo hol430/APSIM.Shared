@@ -6,6 +6,7 @@
 namespace APSIM.Shared.Utilities
 {
     using System;
+    using System.Globalization;
     using System.IO;
     using System.Net;
     using System.Net.Sockets;
@@ -61,7 +62,7 @@ namespace APSIM.Shared.Utilities
             TcpClient Server = null;
             try
             {
-                Server = new TcpClient(serverName, Convert.ToInt32(port));
+                Server = new TcpClient(serverName, Convert.ToInt32(port, CultureInfo.InvariantCulture));
                 Byte[] bData = System.Text.Encoding.ASCII.GetBytes(data);
                 Server.GetStream().Write(bData, 0, bData.Length);
 

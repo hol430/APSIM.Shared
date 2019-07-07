@@ -684,11 +684,11 @@ namespace APSIM.Shared.Utilities
                             return DateTime.Parse(values[Col].ToString());
                     }
                     else if (ColumnName.Equals("year", StringComparison.CurrentCultureIgnoreCase))
-                        Year = Convert.ToInt32(values[Col]);
+                        Year = Convert.ToInt32(values[Col], CultureInfo.InvariantCulture);
                     else if (ColumnName.Equals("month", StringComparison.CurrentCultureIgnoreCase))
-                        Month = Convert.ToInt32(values[Col]);
+                        Month = Convert.ToInt32(values[Col], CultureInfo.InvariantCulture);
                     else if (ColumnName.Equals("day", StringComparison.CurrentCultureIgnoreCase))
-                        Day = Convert.ToInt32(values[Col]);
+                        Day = Convert.ToInt32(values[Col], CultureInfo.InvariantCulture);
                 }
                 catch (Exception err)
                 {
@@ -734,11 +734,11 @@ namespace APSIM.Shared.Utilities
                         return DateTime.Parse(table.Rows[rowIndex][col].ToString());
                 }
                 else if (ColumnName.Equals("year", StringComparison.CurrentCultureIgnoreCase))
-                    Year = Convert.ToInt32(table.Rows[rowIndex][col]);
+                    Year = Convert.ToInt32(table.Rows[rowIndex][col], CultureInfo.InvariantCulture);
                 else if (ColumnName.Equals("month", StringComparison.CurrentCultureIgnoreCase))
-                    Month = Convert.ToInt32(table.Rows[rowIndex][col]);
+                    Month = Convert.ToInt32(table.Rows[rowIndex][col], CultureInfo.InvariantCulture);
                 else if (ColumnName.Equals("day", StringComparison.CurrentCultureIgnoreCase))
-                    Day = Convert.ToInt32(table.Rows[rowIndex][col]);
+                    Day = Convert.ToInt32(table.Rows[rowIndex][col], CultureInfo.InvariantCulture);
             }
 
             if (Year > 0)

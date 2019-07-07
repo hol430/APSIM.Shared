@@ -324,7 +324,7 @@ namespace APSIM.Shared.Utilities
         {
             string[] values = new string[numValues];
             for (int row = 0; row != table.Rows.Count && row != numValues; row++)
-                values[row] = Convert.ToString(table.Rows[row][columnName]);
+                values[row] = Convert.ToString(table.Rows[row][columnName], CultureInfo.InvariantCulture);
             return values;
         }
         
@@ -342,7 +342,7 @@ namespace APSIM.Shared.Utilities
             int index = 0;
             for (int Row = startRow; Row != table.Rows.Count && index != numValues; Row++)
             {
-                values[index] = Convert.ToString(table.Rows[Row][columnName]);
+                values[index] = Convert.ToString(table.Rows[Row][columnName], CultureInfo.InvariantCulture);
                 index++;
             }
             return values;
@@ -377,7 +377,7 @@ namespace APSIM.Shared.Utilities
                 if (Convert.IsDBNull(table.Rows[row][columnName]))
                     values[row] = DateTime.MinValue;
                 else
-                    values[row] = Convert.ToDateTime(table.Rows[row][columnName]);
+                    values[row] = Convert.ToDateTime(table.Rows[row][columnName], CultureInfo.InvariantCulture);
             }
             return values;
         }
@@ -396,7 +396,7 @@ namespace APSIM.Shared.Utilities
                 if (Convert.IsDBNull(view[row][columnName]))
                     values[row] = DateTime.MinValue;
                 else
-                    values[row] = Convert.ToDateTime(view[row][columnName]);
+                    values[row] = Convert.ToDateTime(view[row][columnName], CultureInfo.InvariantCulture);
             }
 
             return values;
@@ -418,7 +418,7 @@ namespace APSIM.Shared.Utilities
 
             List<DateTime> rValues = new List<DateTime>();
             foreach (var row in result)
-                rValues.Add(Convert.ToDateTime(row[colName]));
+                rValues.Add(Convert.ToDateTime(row[colName], CultureInfo.InvariantCulture));
 
             return rValues.ToArray();
 
@@ -503,11 +503,11 @@ namespace APSIM.Shared.Utilities
                         return DateTime.Parse(row[Col].ToString());
                 }
                 else if (ColumnName == "year")
-                    Year = Convert.ToInt32(row[Col]);
+                    Year = Convert.ToInt32(row[Col], CultureInfo.InvariantCulture);
                 else if (ColumnName == "month")
-                    Month = Convert.ToInt32(row[Col]);
+                    Month = Convert.ToInt32(row[Col], CultureInfo.InvariantCulture);
                 else if (ColumnName == "day")
-                    Day = Convert.ToInt32(row[Col]);
+                    Day = Convert.ToInt32(row[Col], CultureInfo.InvariantCulture);
             }
             if (Year > 0)
             {
@@ -702,7 +702,7 @@ namespace APSIM.Shared.Utilities
         {
             if (obj is DateTime)
             {
-                DateTime D = Convert.ToDateTime(obj);
+                DateTime D = Convert.ToDateTime(obj, CultureInfo.InvariantCulture);
                 return D.ToString("yyyy-MM-dd");
             }
             else if (obj is float || obj is double)
@@ -734,11 +734,11 @@ namespace APSIM.Shared.Utilities
                                 if (row[column].ToString() == "-1.#IND00")
                                     newRow[column.ColumnName] = double.NaN;
                                 else if (toDataType == typeof(float))
-                                    newRow[column.ColumnName] = Convert.ToSingle(row[column]);
+                                    newRow[column.ColumnName] = Convert.ToSingle(row[column], CultureInfo.InvariantCulture);
                                 else if (toDataType == typeof(double))
                                     newRow[column.ColumnName] = Convert.ToDouble(row[column], System.Globalization.CultureInfo.InvariantCulture);
                                 else if (toDataType == typeof(int))
-                                    newRow[column.ColumnName] = Convert.ToInt32(row[column]);
+                                    newRow[column.ColumnName] = Convert.ToInt32(row[column], CultureInfo.InvariantCulture);
                                 else if (toDataType == typeof(string))
                                     newRow[column.ColumnName] = row[column].ToString();
                                 else

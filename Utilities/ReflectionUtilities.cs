@@ -141,9 +141,9 @@ namespace APSIM.Shared.Utilities
                 else if (P.PropertyType == typeof(string))
                     P.SetValue(obj, value.ToString(), null);
                 else if (P.PropertyType == typeof(double))
-                    P.SetValue(obj, Convert.ToDouble(value, System.Globalization.CultureInfo.InvariantCulture), null);
+                    P.SetValue(obj, Convert.ToDouble(value, CultureInfo.InvariantCulture), null);
                 else if (P.PropertyType == typeof(int))
-                    P.SetValue(obj, Convert.ToInt32(value), null);
+                    P.SetValue(obj, Convert.ToInt32(value, CultureInfo.InvariantCulture), null);
                 else
                     P.SetValue(obj, value, null);
                 return true;

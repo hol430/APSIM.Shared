@@ -304,9 +304,9 @@ namespace APSIM.Shared.Utilities
             int Count = 0;
             foreach (object Value in Values)
             {
-                if (Value != null && !double.IsNaN(Convert.ToDouble(Value)))
+                if (Value != null && !double.IsNaN(Convert.ToDouble(Value, CultureInfo.InvariantCulture)))
                 {
-                    Sum += Convert.ToDouble(Value);
+                    Sum += Convert.ToDouble(Value, CultureInfo.InvariantCulture);
                     Count++;
                 }
             }
@@ -710,7 +710,7 @@ namespace APSIM.Shared.Utilities
                 if (Values[Index].ToString() == "" || Values[Index].ToString() == "NaN")
                     ReturnValues[Index] = int.MinValue;
                 else
-                    ReturnValues[Index] = Convert.ToInt32(Values[Index]);
+                    ReturnValues[Index] = Convert.ToInt32(Values[Index], CultureInfo.InvariantCulture);
             }
             return ReturnValues;
         }
@@ -735,7 +735,7 @@ namespace APSIM.Shared.Utilities
             }
             else
             {
-                int i = Convert.ToInt32(Math.Truncate(pctile * (n - 1)));       //Otherwise interpolate between the
+                int i = Convert.ToInt32(Math.Truncate(pctile * (n - 1)), CultureInfo.InvariantCulture);       //Otherwise interpolate between the
                 double z = pctile * (n - 1) - i;                                //appropriate array elements
                 return sequence[i] * (1.0 - z) + sequence[i + 1] * z;
             }
@@ -1349,7 +1349,7 @@ namespace APSIM.Shared.Utilities
         {
             float[] Values = new float[DoubleValues.Length];
             for (int i = 0; i < DoubleValues.Length; i++)
-                Values[i] = Convert.ToSingle(DoubleValues[i]);
+                Values[i] = Convert.ToSingle(DoubleValues[i], CultureInfo.InvariantCulture);
             return Values;
         }
         
@@ -1848,5 +1848,20 @@ namespace APSIM.Shared.Utilities
                         select new List<T>(combination) { value }).ToList();
         }
 
+        /// <summary>
+        /// Performs a floating point-safe search for the specified value in a
+        /// list of doubles. Returns the 0-based index of the item in the list,
+        /// or -1 if not found.
+        /// </summary>
+        /// <param name="items">List to search.</param>
+        /// <param name="value">Item to search for.</param>
+        public static int SafeIndexOf(List<double> items, double value)
+        {
+            items.IndexOf(value);
+            for (int i = 0; i < items.Count; i++)
+                if (FloatsAreEqual(items[i], value))
+                    return i;
+            return -1;
+        }
     }
 }
