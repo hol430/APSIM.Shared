@@ -11,6 +11,7 @@ namespace APSIM.Shared.Utilities
     using System.Diagnostics;
     using System.Threading;
     using System.Text;
+    using System.Globalization;
 
     /// <summary>
     /// A collection of utilities for dealing with processes (threads)
@@ -66,8 +67,8 @@ namespace APSIM.Shared.Utilities
                 // If we're on Linux, see if it's a hash bang script. Should really
                 // check executable flag via Mono.Unix.Native.Syscall.stat() too
                 if (System.IO.Path.VolumeSeparatorChar == '/' &&
-                    Convert.ToChar(data[0]) == '#' &&
-                    Convert.ToChar(data[1]) == '!')
+                    Convert.ToChar(data[0], CultureInfo.InvariantCulture) == '#' &&
+                    Convert.ToChar(data[1], CultureInfo.InvariantCulture) == '!')
                     return CompilationMode.Native;
                 // For now, if we're on Linux just see if it has an "ELF" header
                 if (System.IO.Path.VolumeSeparatorChar == '/' && data[0] == 0x7f && data[1] == 'E' && data[2] == 'L' && data[3] == 'F')
