@@ -1005,7 +1005,7 @@ namespace APSIM.Shared.Utilities
             else if (type.ToString() == "System.Double")
                 return "real";
             else
-                return "char(50)";
+                return "text";
         }
 
         /// <summary>Convert .NET type into an SQLite type</summary>
