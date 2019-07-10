@@ -41,8 +41,20 @@ namespace APSIM.Shared.OldAPSIM
         {
             string shortcut = XmlUtilities.Attribute(node, "shortcut");
             XmlNode concreteNode = XmlUtilities.Find(node.OwnerDocument.DocumentElement, shortcut);
+
             if (concreteNode == null)
                 throw new Exception("Cannot find shortcut: " + shortcut);
+
+            if (!string.IsNullOrWhiteSpace(XmlUtilities.Attribute(concreteNode, "shortcut")))
+            {
+                // If this happens, the node we are linked to is a shortcut
+                // itself and is further down in the simulations tree than the
+                // current node. In this scenario, we want to resolve the link
+                // and remove the shortcut attribute so we don't resolve the
+                // shortcut a second time in the Remove() method.
+                ResolveShortcut(concreteNode);
+                XmlUtilities.DeleteAttribute(concreteNode, "shortcut");
+            }
 
             foreach (XmlNode child in concreteNode.ChildNodes)
             {
