@@ -1,8 +1,7 @@
-﻿
-using System;
-
-namespace APSIM.Shared.Soils
+﻿namespace APSIM.Shared.APSoil
 {
+    using System;
+
     /// <summary>A soil analysis class.</summary>
     [Serializable]
     public class Analysis
@@ -11,7 +10,6 @@ namespace APSIM.Shared.Soils
         public double[] Thickness { get; set; }
 
         /// <summary>Gets or sets the rocks.</summary>
-        [Units("%")]
         public double[] Rocks { get; set; }
 
         /// <summary>Gets or sets the rocks metadata.</summary>
@@ -30,7 +28,6 @@ namespace APSIM.Shared.Soils
         public string[] MunsellMetadata { get; set; }
 
         /// <summary>Gets or sets the ec.</summary>
-        [Units("1:5 dS/m")]
         public double[] EC { get; set; }
 
         /// <summary>Gets or sets the ec metadata.</summary>
@@ -43,91 +40,78 @@ namespace APSIM.Shared.Soils
         public string[] PHMetadata { get; set; }
 
         /// <summary>Gets or sets the cl.</summary>
-        [Units("mg/kg")]
         public double[] CL { get; set; }
 
         /// <summary>Gets or sets the cl metadata.</summary>
         public string[] CLMetadata { get; set; }
 
         /// <summary>Gets or sets the boron.</summary>
-        [Units("Hot water mg/kg")]
         public double[] Boron { get; set; }
 
         /// <summary>Gets or sets the boron metadata.</summary>
         public string[] BoronMetadata { get; set; }
 
         /// <summary>Gets or sets the cec.</summary>
-        [Units("cmol+/kg")]
         public double[] CEC { get; set; }
 
         /// <summary>Gets or sets the cec metadata.</summary>
         public string[] CECMetadata { get; set; }
 
         /// <summary>Gets or sets the ca.</summary>
-        [Units("cmol+/kg")]
         public double[] Ca { get; set; }
 
         /// <summary>Gets or sets the ca metadata.</summary>
         public string[] CaMetadata { get; set; }
 
         /// <summary>Gets or sets the mg.</summary>
-        [Units("cmol+/kg")]
         public double[] Mg { get; set; }
 
         /// <summary>Gets or sets the mg metadata.</summary>
         public string[] MgMetadata { get; set; }
 
         /// <summary>Gets or sets the na.</summary>
-        [Units("cmol+/kg")]
         public double[] Na { get; set; }
 
         /// <summary>Gets or sets the na metadata.</summary>
         public string[] NaMetadata { get; set; }
 
         /// <summary>Gets or sets the k.</summary>
-        [Units("cmol+/kg")]
         public double[] K { get; set; }
 
         /// <summary>Gets or sets the k metadata.</summary>
         public string[] KMetadata { get; set; }
 
         /// <summary>Gets or sets the esp.</summary>
-        [Units("%")]
         public double[] ESP { get; set; }
 
         /// <summary>Gets or sets the esp metadata.</summary>
         public string[] ESPMetadata { get; set; }
 
         /// <summary>Gets or sets the mn.</summary>
-        [Units("mg/kg")]
         public double[] Mn { get; set; }
 
         /// <summary>Gets or sets the mn metadata.</summary>
         public string[] MnMetadata { get; set; }
 
         /// <summary>Gets or sets the al.</summary>
-        [Units("cmol+/kg")]
         public double[] Al { get; set; }
 
         /// <summary>Gets or sets the al metadata.</summary>
         public string[] AlMetadata { get; set; }
 
         /// <summary>Gets or sets the particle size sand.</summary>
-        [Units("%")]
         public double[] ParticleSizeSand { get; set; }
 
         /// <summary>Gets or sets the particle size sand metadata.</summary>
         public string[] ParticleSizeSandMetadata { get; set; }
 
         /// <summary>Gets or sets the particle size silt.</summary>
-        [Units("%")]
         public double[] ParticleSizeSilt { get; set; }
 
         /// <summary>Gets or sets the particle size silt metadata.</summary>
         public string[] ParticleSizeSiltMetadata { get; set; }
 
         /// <summary>Gets or sets the particle size clay.</summary>
-        [Units("%")]
         public double[] ParticleSizeClay { get; set; }
 
         /// <summary>Gets or sets the particle size clay metadata.</summary>

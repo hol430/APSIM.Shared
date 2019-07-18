@@ -1,9 +1,4 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="SoilUtilities.cs" company="APSIM Initiative">
-//     Copyright (c) APSIM Initiative
-// </copyright>
-// -----------------------------------------------------------------------
-namespace APSIM.Shared.Soils
+﻿namespace APSIM.Shared.APSoil
 {
     using System;
     using System.IO;

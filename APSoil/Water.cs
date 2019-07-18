@@ -1,9 +1,4 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Water.cs" company="APSIM Initiative">
-//     Copyright (c) APSIM Initiative
-// </copyright>
-// -----------------------------------------------------------------------
-namespace APSIM.Shared.Soils
+﻿namespace APSIM.Shared.APSoil
 {
     using System;
     using System.Collections.Generic;
@@ -18,31 +13,21 @@ namespace APSIM.Shared.Soils
         public double[] Thickness { get; set; }
 
         /// <summary>Gets or sets the bd.</summary>
-        [Units("g/cc")]
         public double[] BD { get; set; }
 
         /// <summary>Gets or sets the air dry.</summary>
-        [Units("mm/mm")]
         public double[] AirDry { get; set; }
 
         /// <summary>Gets or sets the l L15.</summary>
-        [Units("mm/mm")]
         public double[] LL15 { get; set; }
 
         /// <summary>Gets or sets the dul.</summary>
-        [Units("mm/mm")]
         public double[] DUL { get; set; }
 
         /// <summary>Gets or sets the sat.</summary>
-        [Units("mm/mm")]
         public double[] SAT { get; set; }
 
-        /// <summary>Gets or sets the initial soil water (mm/mm).</summary>
-        [Units("mm/mm")]
-        public double[] SW { get; set; }
-
         /// <summary>Gets or sets the ks.</summary>
-        [Units("mm/day")]
         public double[] KS { get; set; }
 
         /// <summary>Gets or sets the bd metadata.</summary>

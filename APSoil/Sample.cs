@@ -1,9 +1,4 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="Sample.cs" company="APSIM Initiative">
-//     Copyright (c) APSIM Initiative
-// </copyright>
-// -----------------------------------------------------------------------
-namespace APSIM.Shared.Soils
+﻿namespace APSIM.Shared.APSoil
 {
     using System;
     using System.Xml.Serialization;
@@ -35,26 +30,23 @@ namespace APSIM.Shared.Soils
         public double[] OC { get; set; }
 
         /// <summary>Gets or sets the EC.</summary>
-        [Units("1:5 dS/m")]
         public double[] EC { get; set; }
 
         /// <summary>Gets or sets the CL.</summary>
-        [Units("mg/kg")]
         public double[] CL { get; set; }
 
         /// <summary>Gets or sets the ESP.</summary>
-        [Units("%")]
         public double[] ESP { get; set; }
 
         /// <summary>Gets or sets the PH.</summary>
         public double[] PH { get; set; }
        
         /// <summary>Gets or sets the NO3 units.</summary>
-        public Nitrogen.NUnitsEnum NO3Units { get; set; }
+        public NUnitsEnum NO3Units { get; set; }
                  
         // Support for NH4 units.
         /// <summary>Gets or sets the NH4 units.</summary>
-        public Nitrogen.NUnitsEnum NH4Units { get; set; }
+        public NUnitsEnum NH4Units { get; set; }
          
         /// <summary>Valid units for soil water</summary>
         public enum SWUnitsEnum 
@@ -67,6 +59,16 @@ namespace APSIM.Shared.Soils
 
             /// <summary>Total water (mm)</summary>
             mm 
+        }
+
+        /// <summary>Valid units for NO3</summary>
+        public enum NUnitsEnum
+        {
+            /// <summary>PPM units</summary>
+            ppm,
+
+            /// <summary>kgha units.</summary>
+            kgha
         }
 
         /// <summary>Gets or sets the SW units.</summary>
