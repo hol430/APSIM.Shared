@@ -368,7 +368,7 @@ namespace APSIM.Shared.Utilities
                     foreach (ApsimConstant constant in addedConstants)
                     {
                         if (constant.Comment == typeof(Single).ToString() || constant.Comment == typeof(Double).ToString())
-                            newMetRow[constant.Name] = Double.Parse(constant.Value);
+                            newMetRow[constant.Name] = Double.Parse(constant.Value, CultureInfo.InvariantCulture);
                         else
                             newMetRow[constant.Name] = constant.Value;
                     }
@@ -681,7 +681,7 @@ namespace APSIM.Shared.Utilities
                         if (ColumnTypes[Col] == typeof(DateTime))
                             return (DateTime)values[Col];
                         else
-                            return DateTime.Parse(values[Col].ToString());
+                            return DateTime.Parse(values[Col].ToString(), CultureInfo.InvariantCulture);
                     }
                     else if (ColumnName.Equals("year", StringComparison.CurrentCultureIgnoreCase))
                         Year = Convert.ToInt32(values[Col], CultureInfo.InvariantCulture);
@@ -731,7 +731,7 @@ namespace APSIM.Shared.Utilities
                     if (ColumnTypes[col] == typeof(DateTime))
                         return (DateTime)table.Rows[rowIndex][col];
                     else
-                        return DateTime.Parse(table.Rows[rowIndex][col].ToString());
+                        return DateTime.Parse(table.Rows[rowIndex][col].ToString(), CultureInfo.InvariantCulture);
                 }
                 else if (ColumnName.Equals("year", StringComparison.CurrentCultureIgnoreCase))
                     Year = Convert.ToInt32(table.Rows[rowIndex][col], CultureInfo.InvariantCulture);
