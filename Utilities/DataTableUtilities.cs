@@ -500,7 +500,7 @@ namespace APSIM.Shared.Utilities
                     if (row.Table.Columns[Col].DataType == typeof(DateTime))
                         return (DateTime)row[Col];
                     else
-                        return DateTime.Parse(row[Col].ToString());
+                        return DateTime.Parse(row[Col].ToString(), CultureInfo.InvariantCulture);
                 }
                 else if (ColumnName == "year")
                     Year = Convert.ToInt32(row[Col], CultureInfo.InvariantCulture);

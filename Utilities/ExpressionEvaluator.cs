@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace APSIM.Shared.Utilities
@@ -262,7 +263,7 @@ namespace APSIM.Shared.Utilities
                         {
                             state = 1;
                             ctSymbol.m_name = temp.ToString();
-                            ctSymbol.m_value = Double.Parse(temp.ToString());
+                            ctSymbol.m_value = Double.Parse(temp.ToString(), CultureInfo.InvariantCulture);
                             ctSymbol.m_type = ExpressionType.Value;
                             m_equation.Add(ctSymbol);
                             ctSymbol.m_name = equation[i].ToString();
@@ -356,7 +357,7 @@ namespace APSIM.Shared.Utilities
                 ctSymbol.m_name = temp.ToString();
                 if (state == 2)
                 {
-                    ctSymbol.m_value = Double.Parse(temp.ToString());
+                    ctSymbol.m_value = Double.Parse(temp.ToString(), CultureInfo.InvariantCulture);
                     ctSymbol.m_type = ExpressionType.Value;
                 }
                 else
