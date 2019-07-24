@@ -341,7 +341,7 @@ namespace APSIM.Shared.Utilities
                 else if (type == typeof(string[]))
                     return stringValues;
                 else if (type == typeof(DateTime))
-                    return stringValues.Select(d => DateTime.Parse(d));
+                    return stringValues.Select(d => DateTime.Parse(d, CultureInfo.InvariantCulture));
                 else
                     throw new Exception("Cannot convert '" + stringValue + "' into an object of type '" + type.ToString() + "'");
             }
