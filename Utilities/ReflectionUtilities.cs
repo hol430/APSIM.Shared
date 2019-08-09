@@ -331,6 +331,15 @@ namespace APSIM.Shared.Utilities
         /// </summary>
         public static object StringToObject(Type dataType, string newValue)
         {
+            return StringToObject(dataType, newValue, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Convert the specified 'stringValue' into an object of the specified 'type'.
+        /// Will throw if cannot convert type.
+        /// </summary>
+        public static object StringToObject(Type dataType, string newValue, IFormatProvider format)
+        {
             if (string.IsNullOrWhiteSpace(newValue))
             {
                 // User has entered an empty string. Get the default value for this property type.
@@ -348,7 +357,7 @@ namespace APSIM.Shared.Utilities
                 // Arrays do not implement IConvertible, so we cannot just split the string on
                 // the commas and parse the string array into Convert.ChangeType. Instead, we
                 // must convert each element of the array individually.
-                object[] arr = newValue.Split(',').Select(s => Convert.ChangeType(s, dataType.GetElementType(), CultureInfo.InvariantCulture)).ToArray();
+                object[] arr = newValue.Split(',').Select(s => Convert.ChangeType(s, dataType.GetElementType(), format)).ToArray();
 
                 // An object array is not good enough. We need an array with correct element type.
                 object result = Array.CreateInstance(dataType.GetElementType(), arr.Length);
@@ -360,7 +369,11 @@ namespace APSIM.Shared.Utilities
             if (dataType.IsEnum)
                 return Enum.Parse(dataType, newValue, true);
 
-            return Convert.ChangeType(newValue, dataType, CultureInfo.InvariantCulture);
+            // Convert.ChangeType() doesn't seem to work properly on nullable types.
+            if (!dataType.IsValueType)
+                dataType = Nullable.GetUnderlyingType(dataType);
+
+            return Convert.ChangeType(newValue, dataType, format);
         }
 
         /// <summary>
