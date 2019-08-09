@@ -329,38 +329,38 @@ namespace APSIM.Shared.Utilities
         /// Convert the specified 'stringValue' into an object of the specified 'type'.
         /// Will throw if cannot convert type.
         /// </summary>
-        public static object StringToObject(Type type, string stringValue)
+        public static object StringToObject(Type dataType, string newValue)
         {
-            if (type.IsArray)
+            if (string.IsNullOrWhiteSpace(newValue))
             {
-                string[] stringValues = stringValue.ToString().Split(",".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                if (type == typeof(double[]))
-                    return MathUtilities.StringsToDoubles(stringValues);
-                else if (type == typeof(int[]))
-                    return MathUtilities.StringsToDoubles(stringValues);
-                else if (type == typeof(string[]))
-                    return stringValues;
-                else if (type == typeof(DateTime))
-                    return stringValues.Select(d => DateTime.Parse(d, CultureInfo.InvariantCulture));
+                // User has entered an empty string. Get the default value for this property type.
+                if (dataType.IsValueType)
+                    // Property is not nullable (int, bool, struct, etc).
+                    // Return default value for this type.
+                    return Activator.CreateInstance(dataType);
                 else
-                    throw new Exception("Cannot convert '" + stringValue + "' into an object of type '" + type.ToString() + "'");
+                    // Property is nullable so return null.
+                    return null;
             }
-            else if (type == typeof(double))
-                return Convert.ToDouble(stringValue, CultureInfo.InvariantCulture);
-            else if (type == typeof(float))
-                return Convert.ToSingle(stringValue, CultureInfo.InvariantCulture);
-            else if (type == typeof(int))
-                return Convert.ToInt32(stringValue, CultureInfo.InvariantCulture);
-            else if (type == typeof(DateTime))
-                return Convert.ToDateTime(stringValue, CultureInfo.InvariantCulture);
-            else if (type == typeof(string))
-                return stringValue;
-            else if (type == typeof(bool))
-                return Boolean.Parse(stringValue);
-            else if (type.IsEnum)
-                return Enum.Parse(type, stringValue, true);
-            else
-                return null;
+
+            if (dataType.IsArray)
+            {
+                // Arrays do not implement IConvertible, so we cannot just split the string on
+                // the commas and parse the string array into Convert.ChangeType. Instead, we
+                // must convert each element of the array individually.
+                object[] arr = newValue.Split(',').Select(s => Convert.ChangeType(s, dataType.GetElementType(), CultureInfo.InvariantCulture)).ToArray();
+
+                // An object array is not good enough. We need an array with correct element type.
+                object result = Array.CreateInstance(dataType.GetElementType(), arr.Length);
+                Array.Copy(arr, (Array)result, arr.Length);
+                return result;
+            }
+
+            // Do we really want enums to be case-insensitive?
+            if (dataType.IsEnum)
+                return Enum.Parse(dataType, newValue, true);
+
+            return Convert.ChangeType(newValue, dataType, CultureInfo.InvariantCulture);
         }
 
         /// <summary>
