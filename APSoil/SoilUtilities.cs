@@ -1,5 +1,6 @@
 ﻿namespace APSIM.Shared.APSoil
 {
+    using APSIM.Shared.Utilities;
     using System;
     using System.IO;
     using System.Xml.Serialization;
@@ -79,6 +80,67 @@
         static public int FindLayerIndex(Soil soil, double depth)
         {
             return Array.FindIndex(ToCumThickness(soil.Water.Thickness), d => d >= depth);
+        }
+
+        /// <summary>Convert an array of thickness (mm) to depth strings (cm)</summary>
+        /// <param name="Thickness">The thickness.</param>
+        /// <returns></returns>
+        public static string[] ToDepthStrings(double[] Thickness)
+        {
+            if (Thickness == null)
+                return null;
+            string[] Strings = new string[Thickness.Length];
+            double DepthSoFar = 0;
+            for (int i = 0; i != Thickness.Length; i++)
+            {
+                if (Thickness[i] == MathUtilities.MissingValue)
+                    Strings[i] = "";
+                else
+                {
+                    double ThisThickness = Thickness[i] / 10; // to cm
+                    double TopOfLayer = DepthSoFar;
+                    double BottomOfLayer = DepthSoFar + ThisThickness;
+                    Strings[i] = TopOfLayer.ToString() + "-" + BottomOfLayer.ToString();
+                    DepthSoFar = BottomOfLayer;
+                }
+            }
+            return Strings;
+        }
+
+        /// <summary>
+        /// Convert an array of depth strings (cm) to thickness (mm) e.g.
+        /// "0-10", "10-30"
+        /// To
+        /// 100, 200
+        /// </summary>
+        /// <param name="DepthStrings">The depth strings.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception">Invalid layer string:  + DepthStrings[i] +
+        ///                                   . String must be of the form: 10-30</exception>
+        public static double[] ToThickness(string[] DepthStrings)
+        {
+            double[] Thickness = new double[DepthStrings.Length];
+            for (int i = 0; i != DepthStrings.Length; i++)
+            {
+                if (DepthStrings[i] == "")
+                    Thickness[i] = MathUtilities.MissingValue;
+                else
+                {
+                    int PosDash = DepthStrings[i].IndexOf('-');
+                    if (PosDash == -1)
+                        throw new Exception("Invalid layer string: " + DepthStrings[i] +
+                                  ". String must be of the form: 10-30");
+                    double TopOfLayer;
+                    double BottomOfLayer;
+
+                    if (!Double.TryParse(DepthStrings[i].Substring(0, PosDash), out TopOfLayer))
+                        throw new Exception("Invalid string for layer top: '" + DepthStrings[i].Substring(0, PosDash) + "'");
+                    if (!Double.TryParse(DepthStrings[i].Substring(PosDash + 1), out BottomOfLayer))
+                        throw new Exception("Invalid string for layer bottom: '" + DepthStrings[i].Substring(PosDash + 1) + "'");
+                    Thickness[i] = (BottomOfLayer - TopOfLayer) * 10;
+                }
+            }
+            return Thickness;
         }
 
     }
