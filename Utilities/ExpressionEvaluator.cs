@@ -864,6 +864,15 @@ namespace APSIM.Shared.Utilities
                         result.m_type = ExpressionType.Error;
                     }
                     break;
+                case "mean":
+                    if (args.Length == 1)
+                    {
+                        double[] values = ((Symbol)args[0]).m_values;
+                        result.m_value = MathUtilities.Average(values);
+                        result.m_name = name;
+                        result.m_values = null;
+                    }
+                    break;
                 case "sum":
                     if (args.Length == 1)
                     {
