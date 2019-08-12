@@ -130,7 +130,10 @@ namespace APSIM.Shared.Utilities
             // Make sure the table has the specified column
             if (!table.Columns.Contains(columnName))
             {
-                table.Columns.Add(columnName, values.GetType().GetElementType());
+                if (values == null)
+                    table.Columns.Add(columnName);
+                else
+                    table.Columns.Add(columnName, values.GetType().GetElementType());
             }
 
             if (values != null)
