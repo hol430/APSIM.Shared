@@ -326,8 +326,8 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>
-        /// Convert the specified 'stringValue' into an object of the specified 'type'.
-        /// Will throw if cannot convert type.
+        /// Convert the specified 'stringValue' into an object of the specified 'type'
+        /// using the invariant culture. Will throw if cannot convert type.
         /// </summary>
         public static object StringToObject(Type dataType, string newValue)
         {
@@ -357,7 +357,7 @@ namespace APSIM.Shared.Utilities
                 // Arrays do not implement IConvertible, so we cannot just split the string on
                 // the commas and parse the string array into Convert.ChangeType. Instead, we
                 // must convert each element of the array individually.
-                object[] arr = newValue.Split(',').Select(s => Convert.ChangeType(s, dataType.GetElementType(), format)).ToArray();
+                object[] arr = newValue.Split(',').Select(s => StringToObject(dataType.GetElementType(), s, format)).ToArray();
 
                 // An object array is not good enough. We need an array with correct element type.
                 object result = Array.CreateInstance(dataType.GetElementType(), arr.Length);
@@ -377,9 +377,17 @@ namespace APSIM.Shared.Utilities
         }
 
         /// <summary>
-        /// Convert the specified 'obj' into a string.
+        /// Convert the specified 'obj' into a string in a given format.
         /// </summary>
         public static string ObjectToString(object obj)
+        {
+            return ObjectToString(obj, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Convert the specified 'obj' into a string.
+        /// </summary>
+        public static string ObjectToString(object obj, IFormatProvider format)
         {
             if (obj.GetType().IsArray)
             {
@@ -389,18 +397,12 @@ namespace APSIM.Shared.Utilities
                 {
                     if (j > 0)
                         stringValue += ",";
-                    stringValue += arr.GetValue(j).ToString();
+                    stringValue += ObjectToString(arr.GetValue(j));
                 }
                 return stringValue;
             }
-            else if (obj.GetType() == typeof(DateTime))
-            {
-                return ((DateTime) obj).ToString("yyyy-MM-dd");
-            }
             else
-            {
-                return Convert.ToString(obj, CultureInfo.InvariantCulture);
-            }
+                return Convert.ToString(obj, format);
         }
 
         /// <summary>
