@@ -370,8 +370,9 @@ namespace APSIM.Shared.Utilities
                 return Enum.Parse(dataType, newValue, true);
 
             // Convert.ChangeType() doesn't seem to work properly on nullable types.
-            if (!dataType.IsValueType)
-                dataType = Nullable.GetUnderlyingType(dataType);
+            Type underlyingType = Nullable.GetUnderlyingType(dataType);
+            if (underlyingType != null)
+                dataType = underlyingType;
 
             return Convert.ChangeType(newValue, dataType, format);
         }
